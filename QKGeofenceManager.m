@@ -114,7 +114,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     self.regionsNeedingProcessing = nil;
     
     for (CLRegion *region in [self.locationManager monitoredRegions]) {
-        self.locationManager stopMonitoringForRegion:region];
+        [self.locationManager stopMonitoringForRegion:region];
     }
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
