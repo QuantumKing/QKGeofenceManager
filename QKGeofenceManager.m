@@ -117,9 +117,9 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     for (CLCircularRegion *fence in allGeofences) {
         if (fence.radius < self.locationManager.maximumRegionMonitoringDistance) {
             CLLocation *fenceCenter = [[CLLocation alloc] initWithLatitude:fence.center.latitude longitude:fence.center.longitude];
-            CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius;
             CLLocationAccuracy accuracy = location.horizontalAccuracy;
-            if (d_r - accuracy < 0) {
+            CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius - accuracy;
+            if (d_r < 0) {
                 // isInside
                 [fencesInside addObject:fence];
             }
@@ -147,13 +147,14 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     
     CLLocationDistance radius;
     if ([fencesWithDistanceToBoundary count] < MaxNumberOfGeofences) {
-        radius = CurrentRegionPaddingRatio * CurrentRegionMaxRadius;
+        radius = CurrentRegionMaxRadius;
     }
     else {
         NSArray *tuple = [fencesWithDistanceToBoundary firstObject];
-        CLLocationDistance d_r = MIN(CurrentRegionMaxRadius, [[tuple lastObject] doubleValue]);
-        radius = CurrentRegionPaddingRatio * d_r;
+        radius = MIN(CurrentRegionMaxRadius, [[tuple lastObject] doubleValue]);
+        radius = MAX(radius, 2.0);
     }
+    radius *= CurrentRegionPaddingRatio;
     
     CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
     [self.regionsNeedingProcessing addObject:currentRegion.identifier];
