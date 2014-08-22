@@ -10,7 +10,10 @@
 @interface QKGeofenceManager ()
 
 @property (nonatomic) CLLocationManager *locationManager;
-@property (nonatomic) NSMutableSet *regionsNeedingProcessing;
+
+@property (nonatomic) NSMutableArray *regionsNeedingProcessing;
+@property (nonatomic) NSMutableSet *regionsBeingProcessed;
+@property (nonatomic) NSMutableSet *nearestRegions;
 
 // Processing happens while processingTimer is valid.
 @property (nonatomic) NSTimer *processingTimer;
@@ -23,7 +26,7 @@
 
 // iOS gives you 10 seconds in total to process enter/exit events, I use 5 seconds to get a lock on the GPS
 // and the rest is used to process the geofences.
-static const NSTimeInterval MaxTimeToProcessGeofences = 5;
+static const NSTimeInterval MaxTimeToProcessGeofences = 5.0;
 
 // iOS gives you a maximum of 20 regions to monitor. I use one for the current region.
 static const NSUInteger MaxNumberOfGeofences = 20 - 1;
@@ -71,6 +74,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     [self.locationManager stopMonitoringSignificantLocationChanges];
     
     self.regionsNeedingProcessing = nil;
+    self.regionsBeingProcessed = nil;
 
     for (CLRegion *region in [self.locationManager monitoredRegions]) {
         [self.locationManager stopMonitoringForRegion:region];
@@ -110,41 +114,31 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         return;
     }
     
+    self.regionsNeedingProcessing = [NSMutableArray array];
+    self.regionsBeingProcessed = [NSMutableSet set];
+    self.nearestRegions = [NSMutableSet set];
+    
     NSArray *allGeofences = [self.dataSource geofencesForGeofenceManager:self];
     NSMutableArray *fencesWithDistanceToBoundary = [NSMutableArray array];
-    NSMutableSet *fencesInside = [NSMutableSet set];
-    
+
     for (CLCircularRegion *fence in allGeofences) {
         if (fence.radius < self.locationManager.maximumRegionMonitoringDistance) {
             CLLocation *fenceCenter = [[CLLocation alloc] initWithLatitude:fence.center.latitude longitude:fence.center.longitude];
             CLLocationAccuracy accuracy = location.horizontalAccuracy;
             CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius - accuracy;
-            if (d_r < 0) {
-                // isInside
-                [fencesInside addObject:fence];
+            if ([fencesWithDistanceToBoundary count] < MaxNumberOfGeofences) {
+                [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
             }
-            [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
-        }
-    }
-
-    [fencesWithDistanceToBoundary sortUsingComparator:^NSComparisonResult(NSArray *tuple1, NSArray *tuple2){
-        return [[tuple1 lastObject] compare:[tuple2 lastObject]];
-    }];
-        
-    self.regionsNeedingProcessing = [NSMutableSet set];
-
-    for (NSArray *tuple in fencesWithDistanceToBoundary) {
-        CLRegion *fence = [tuple firstObject];
-        if ([self.regionsNeedingProcessing count] >= MaxNumberOfGeofences) {
-            break;
-        }
-        else {
-            [fencesInside removeObject:fence];
-            [self.regionsNeedingProcessing addObject:fence.identifier];
-            [self.locationManager startMonitoringForRegion:fence];
+            else if (d_r < CurrentRegionMaxRadius) {
+                [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
+            }
         }
     }
     
+    [fencesWithDistanceToBoundary sortUsingComparator:^NSComparisonResult(NSArray *tuple1, NSArray *tuple2){
+        return [[tuple1 lastObject] compare:[tuple2 lastObject]];
+    }];
+
     CLLocationDistance radius;
     if ([fencesWithDistanceToBoundary count] < MaxNumberOfGeofences) {
         radius = CurrentRegionMaxRadius;
@@ -157,13 +151,23 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     radius *= CurrentRegionPaddingRatio;
     
     CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
-    [self.regionsNeedingProcessing addObject:currentRegion.identifier];
-    [self.locationManager startMonitoringForRegion:currentRegion];
+    [self.regionsNeedingProcessing addObject:currentRegion];
     
-    if ([self.delegate respondsToSelector:@selector(geofenceManager:isInsideGeofence:)]) {
-        for (CLRegion *fence in fencesInside) {
-            [self.delegate geofenceManager:self isInsideGeofence:fence];
+    [fencesWithDistanceToBoundary enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSArray *tuple, NSUInteger idx, BOOL *stop){
+        CLRegion *fence = [tuple firstObject];
+        if ([self.regionsBeingProcessed count] < MaxNumberOfGeofences) {
+            [self.regionsBeingProcessed addObject:fence];
         }
+        else {
+            [self.regionsNeedingProcessing addObject:fence];
+            if (idx < MaxNumberOfGeofences) {
+                [self.nearestRegions addObject:fence];
+            }
+        }
+    }];
+    
+    for (CLRegion *fence in self.regionsBeingProcessed) {
+        [self.locationManager startMonitoringForRegion:fence];
     }
 }
 
@@ -172,6 +176,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     [self.processingTimer invalidate];
     [self.locationManager stopUpdatingLocation];
     self.regionsNeedingProcessing = nil;
+    self.regionsBeingProcessed = nil;
     [self _setState:QKGeofenceManagerStateFailed];
     
     if ([self.delegate respondsToSelector:@selector(geofenceManager:didFailWithError:)]) {
@@ -190,6 +195,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     [self.processingTimer invalidate];
     [self.locationManager stopUpdatingLocation];
     self.regionsNeedingProcessing = nil;
+    self.regionsBeingProcessed = nil;
     [self _setState:QKGeofenceManagerStateIdle];
 }
 
@@ -210,11 +216,11 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     }
     
     BOOL a = (self.state == QKGeofenceManagerStateProcessing);
-    BOOL b = [self.regionsNeedingProcessing containsObject:region.identifier];
+    BOOL b = [self.regionsBeingProcessed containsObject:region];
 
     if (a && b) {
         NSLog(@"try again %@", region.identifier);
-        [manager performSelectorOnMainThread:@selector(startMonitoringForRegion:) withObject:region waitUntilDone:NO];
+        [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:region];
     }
 }
 
@@ -237,7 +243,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
 - (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
 {
-    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsNeedingProcessing containsObject:region.identifier]) {
+    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsBeingProcessed containsObject:region]) {
         return;
     }
     
@@ -248,7 +254,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         else { // Keep attempting to find the current region.
             CLLocationDistance radius = [(CLCircularRegion *)region radius];
             CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:manager.location.coordinate radius:radius identifier:CurrentRegionName];
-            [manager performSelectorOnMainThread:@selector(startMonitoringForRegion:) withObject:currentRegion waitUntilDone:NO];
+            [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:currentRegion];
             return;
         }
     }
@@ -261,16 +267,27 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         MWLog(@"processed %@", region.identifier);
     }
     
-    [self.regionsNeedingProcessing removeObject:region.identifier];
-
-    if ([self.regionsNeedingProcessing count] == 0) { // If all regions have finished processing, finish up.
-        [self performSelectorOnMainThread:@selector(finishedProcessingGeofences) withObject:nil waitUntilDone:YES];
+    [self.regionsBeingProcessed removeObject:region];
+    
+    if (![self.nearestRegions containsObject:region]) {
+        [manager stopMonitoringForRegion:region];
+    }
+    
+    CLRegion *nextFenceNeedingProcessing = [self.regionsNeedingProcessing lastObject];
+    
+    if (nextFenceNeedingProcessing) {
+        [self.regionsBeingProcessed addObject:nextFenceNeedingProcessing];
+        [self.regionsNeedingProcessing removeObject:nextFenceNeedingProcessing];
+        [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:nextFenceNeedingProcessing];
+    }
+    else if ([self.regionsBeingProcessed count] == 0) { // All regions have finished processing, finish up.
+        [self finishedProcessingGeofences];
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLCircularRegion *)region
 {
-    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsNeedingProcessing containsObject:region.identifier]) {
+    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsBeingProcessed containsObject:region]) {
         return;
     }
     
