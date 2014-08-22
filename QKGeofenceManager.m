@@ -7,8 +7,6 @@
 
 #import "QKGeofenceManager.h"
 
-NSString *const QKGeofenceManagerDefaultsKey = @"qk_geofence_manager_geofences";
-
 @interface QKGeofenceManager ()
 
 @property (nonatomic) CLLocationManager *locationManager;
@@ -63,47 +61,6 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         }
     }
 }
-
-/*
-#pragma mark - Adding Geofences
-
-- (void)addGeofences:(NSArray *)geofences
-{
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSMutableArray *allGeofences = [[defaults arrayForKey:QKGeofenceManagerDefaultsKey] mutableCopy];
-    [allGeofences addObjectsFromArray:geofences];
-    [defaults setObject:allGeofences forKey:QKGeofenceManagerDefaultsKey];
-    [defaults synchronize];
-    
-    [self refreshManager];
-}
-
-#pragma mark - Removing Geofences
-
-- (void)removeGeofences:(NSArray *)geofences
-{
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSMutableArray *allGeofences = [[defaults arrayForKey:QKGeofenceManagerDefaultsKey] mutableCopy];
-    [allGeofences removeObjectsInArray:geofences];
-    [defaults setObject:allGeofences forKey:QKGeofenceManagerDefaultsKey];
-    [defaults synchronize];
-    
-    [self refreshManager];
-    
-    for (CLRegion *fence in geofences) {
-        NSLog(@"stopped monitoring %@", fence.identifier);
-    }
-}
-
-- (void)removeAllGeofences
-{
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults removeObjectForKey:QKGeofenceManagerDefaultsKey];
-    [defaults synchronize];
-    
-    [self refreshManager];
-}
-*/
 
 #pragma mark - Refreshing Geofence Manager
 
