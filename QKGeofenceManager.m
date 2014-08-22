@@ -29,7 +29,7 @@
 static const NSTimeInterval MaxTimeToProcessGeofences = 5.0;
 
 // iOS gives you a maximum of 20 regions to monitor. I use one for the current region.
-static const NSUInteger MaxNumberOfGeofences = 20 - 1;
+static const NSUInteger GeofenceMonitoringLimit = 20 - 1;
 
 static NSString *const CurrentRegionName = @"currentRegion";
 static const CLLocationDistance CurrentRegionMaxRadius = 1000;
@@ -126,7 +126,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
             CLLocation *fenceCenter = [[CLLocation alloc] initWithLatitude:fence.center.latitude longitude:fence.center.longitude];
             CLLocationAccuracy accuracy = location.horizontalAccuracy;
             CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius - accuracy;
-            if ([fencesWithDistanceToBoundary count] < MaxNumberOfGeofences) {
+            if ([fencesWithDistanceToBoundary count] < GeofenceMonitoringLimit) {
                 [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
             }
             else if (d_r < CurrentRegionMaxRadius) {
@@ -140,7 +140,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     }];
 
     CLLocationDistance radius;
-    if ([fencesWithDistanceToBoundary count] < MaxNumberOfGeofences) {
+    if ([fencesWithDistanceToBoundary count] < GeofenceMonitoringLimit) {
         radius = CurrentRegionMaxRadius;
     }
     else {
@@ -155,12 +155,12 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     
     [fencesWithDistanceToBoundary enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSArray *tuple, NSUInteger idx, BOOL *stop){
         CLRegion *fence = [tuple firstObject];
-        if ([self.regionsBeingProcessed count] < MaxNumberOfGeofences) {
+        if ([self.regionsBeingProcessed count] < GeofenceMonitoringLimit) {
             [self.regionsBeingProcessed addObject:fence];
         }
         else {
             [self.regionsNeedingProcessing addObject:fence];
-            if (idx < MaxNumberOfGeofences) {
+            if (idx < GeofenceMonitoringLimit) {
                 [self.nearestRegions addObject:fence];
             }
         }
