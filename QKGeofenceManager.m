@@ -103,7 +103,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
 - (void)startProcessingGeofences
 {
-    MWLog(@"You are near %@", self.locationManager.location);
+    NSLog(@"You are near %@", self.locationManager.location);
     self.processingTimer = [NSTimer scheduledTimerWithTimeInterval:MaxTimeToProcessGeofences target:self selector:@selector(failedProcessingGeofencesWithError:) userInfo:nil repeats:NO];
     [self processFencesNearLocation:self.locationManager.location];
 }
@@ -249,7 +249,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     
     if ([region.identifier isEqualToString:CurrentRegionName]) {
         if (state == CLRegionStateInside) {
-            MWLog(@"found current region %@", region);
+            NSLog(@"found current region %@", region);
         }
         else { // Keep attempting to find the current region.
             CLLocationDistance radius = [(CLCircularRegion *)region radius];
@@ -264,23 +264,24 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
                 [self.delegate geofenceManager:self isInsideGeofence:region];
             }
         }
-        MWLog(@"processed %@", region.identifier);
+        NSLog(@"processed %@", region.identifier);
     }
     
     [self.regionsBeingProcessed removeObject:region];
     
     if (![self.nearestRegions containsObject:region]) {
         [manager stopMonitoringForRegion:region];
+        
+        CLRegion *nextFenceNeedingProcessing = [self.regionsNeedingProcessing lastObject];
+        
+        if (nextFenceNeedingProcessing) {
+            [self.regionsBeingProcessed addObject:nextFenceNeedingProcessing];
+            [self.regionsNeedingProcessing removeLastObject];
+            [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:nextFenceNeedingProcessing];
+        }
     }
     
-    CLRegion *nextFenceNeedingProcessing = [self.regionsNeedingProcessing lastObject];
-    
-    if (nextFenceNeedingProcessing) {
-        [self.regionsBeingProcessed addObject:nextFenceNeedingProcessing];
-        [self.regionsNeedingProcessing removeObject:nextFenceNeedingProcessing];
-        [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:nextFenceNeedingProcessing];
-    }
-    else if ([self.regionsBeingProcessed count] == 0) { // All regions have finished processing, finish up.
+    if ([self.regionsBeingProcessed count] == 0 && [self.regionsNeedingProcessing count] == 0) { // All regions have finished processing, finish up.
         [self finishedProcessingGeofences];
     }
 }
@@ -310,7 +311,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         [self reloadGeofences];
     }
     else {
-        MWLog(@"location %@", manager.location);
+        NSLog(@"location %@", manager.location);
     }
 }
 
