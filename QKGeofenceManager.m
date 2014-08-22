@@ -12,8 +12,7 @@ NSString *const QKGeofenceManagerDefaultsKey = @"qk_geofence_manager_geofences";
 @interface QKGeofenceManager ()
 
 @property (nonatomic) CLLocationManager *locationManager;
-@property (nonatomic) NSMutableSet *regionsNeedingState;
-@property (nonatomic) NSMutableSet *regionsNeedingMonitoring;
+@property (nonatomic) NSMutableSet *regionsNeedingProcessing;
 
 // Processing happens while processingTimer is valid.
 @property (nonatomic) NSTimer *processingTimer;
@@ -47,7 +46,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
 - (id)init
 {
-    if ((self = [self init])) {
+    if ((self = [super init])) {
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
@@ -55,14 +54,17 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     return self;
 }
 
-- (QKGeofenceManagerState)state
+- (void)_setState:(QKGeofenceManagerState)state
 {
-    if ([self.processingTimer isValid]) {
-        return QKGeofenceManagerStateProcessing;
+    if (state != _state) {
+        _state = state;
+        if ([self.delegate respondsToSelector:@selector(geofenceManager:didChangeState:)]) {
+            [self.delegate geofenceManager:self didChangeState:_state];
+        }
     }
-    return _state;
 }
 
+/*
 #pragma mark - Adding Geofences
 
 - (void)addGeofences:(NSArray *)geofences
@@ -101,28 +103,27 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     
     [self refreshManager];
 }
+*/
 
 #pragma mark - Refreshing Geofence Manager
 
-- (void)refreshManager
+- (void)reloadGeofences
 {
-    _state = QKGeofenceManagerStateIdle;
-    
     [self.processingTimer invalidate];
     [self.locationManager stopUpdatingLocation];
     [self.locationManager stopMonitoringSignificantLocationChanges];
     
-    self.regionsNeedingState = nil;
-    self.regionsNeedingMonitoring = nil;
+    self.regionsNeedingProcessing = nil;
 
     for (CLRegion *region in [self.locationManager monitoredRegions]) {
         [self.locationManager stopMonitoringForRegion:region];
     }
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSMutableArray *allGeofences = [defaults arrayForKey:QKGeofenceManagerDefaultsKey];
-    
+    NSArray *allGeofences = [self.dataSource geofencesForGeofenceManager:self];
+
     if ([allGeofences count] > 0) {
+        [self _setState:QKGeofenceManagerStateProcessing];
+        
         // Timer to get a lock on the GPS location
         NSTimeInterval timeToLock = 9.9 - MaxTimeToProcessGeofences;
         self.processingTimer = [NSTimer scheduledTimerWithTimeInterval:timeToLock target:self selector:@selector(startProcessingGeofences) userInfo:nil repeats:NO];
@@ -133,15 +134,16 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         
         // Turn on significant location changes to help monitor the current region.
         [self.locationManager startMonitoringSignificantLocationChanges];
-        
-        MWLog(@"refreshing");
+    }
+    else {
+        [self _setState:QKGeofenceManagerStateIdle];
     }
 }
 
 - (void)startProcessingGeofences
 {
     MWLog(@"You are near %@", self.locationManager.location);
-    self.processingTimer = [NSTimer scheduledTimerWithTimeInterval:MaxTimeToProcessGeofences target:self selector:@selector(failedProcessingGeofences) userInfo:nil repeats:NO];
+    self.processingTimer = [NSTimer scheduledTimerWithTimeInterval:MaxTimeToProcessGeofences target:self selector:@selector(failedProcessingGeofencesWithError:) userInfo:nil repeats:NO];
     [self processFencesNearLocation:self.locationManager.location];
 }
 
@@ -151,19 +153,18 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         return;
     }
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSMutableArray *allGeofences = [defaults arrayForKey:QKGeofenceManagerDefaultsKey];
+    NSArray *allGeofences = [self.dataSource geofencesForGeofenceManager:self];
     NSMutableArray *fencesWithDistanceToBoundary = [NSMutableArray array];
+    NSMutableSet *fencesInside = [NSMutableSet set];
     
-    MWLog(@"processing geofences");
-
     for (CLCircularRegion *fence in allGeofences) {
         if (fence.radius < self.locationManager.maximumRegionMonitoringDistance) {
             CLLocation *fenceCenter = [[CLLocation alloc] initWithLatitude:fence.center.latitude longitude:fence.center.longitude];
             CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius;
-            if (d_r < CurrentRegionMaxRadius) {
-                [self.regionsNeedingState addObject:fence.identifier];
-                [self.locationManager requestStateForRegion:fence];
+            CLLocationAccuracy accuracy = location.horizontalAccuracy;
+            if (d_r - accuracy < 0) {
+                // isInside
+                [fencesInside addObject:fence];
             }
             [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
         }
@@ -172,19 +173,17 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     [fencesWithDistanceToBoundary sortUsingComparator:^NSComparisonResult(NSArray *tuple1, NSArray *tuple2){
         return [[tuple1 lastObject] compare:[tuple2 lastObject]];
     }];
-    
-    MWLog(@"%@", fencesWithDistanceToBoundary);
-    
-    self.regionsNeedingState = [NSMutableSet set];
-    self.regionsNeedingMonitoring = [NSMutableSet set];
+        
+    self.regionsNeedingProcessing = [NSMutableSet set];
 
     for (NSArray *tuple in fencesWithDistanceToBoundary) {
         CLRegion *fence = [tuple firstObject];
-        if ([self.regionsNeedingMonitoring count] >= MaxNumberOfGeofences) {
+        if ([self.regionsNeedingProcessing count] >= MaxNumberOfGeofences) {
             break;
         }
         else {
-            [self.regionsNeedingMonitoring addObject:fence.identifier];
+            [fencesInside removeObject:fence];
+            [self.regionsNeedingProcessing addObject:fence.identifier];
             [self.locationManager startMonitoringForRegion:fence];
         }
     }
@@ -194,34 +193,46 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         radius = CurrentRegionPaddingRatio * CurrentRegionMaxRadius;
     }
     else {
-        NSArray *tuple = [fences firstObject];
+        NSArray *tuple = [fencesWithDistanceToBoundary firstObject];
         CLLocationDistance d_r = MIN(CurrentRegionMaxRadius, [[tuple lastObject] doubleValue]);
         radius = CurrentRegionPaddingRatio * d_r;
     }
     
     CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
-    [self.regionsNeedingMonitoring addObject:currentRegion.identifier];
-    [self.regionsNeedingState addObject:currentRegion.identifier];
-    [self.locationManager requestStateForRegion:currentRegion];
+    [self.regionsNeedingProcessing addObject:currentRegion.identifier];
     [self.locationManager startMonitoringForRegion:currentRegion];
+    
+    if ([self.delegate respondsToSelector:@selector(geofenceManager:isInsideGeofence:)]) {
+        for (CLRegion *fence in fencesInside) {
+            [self.delegate geofenceManager:self isInsideGeofence:fence];
+        }
+    }
 }
 
-- (void)failedProcessingGeofences
+- (void)failedProcessingGeofencesWithError:(NSError *)error
 {
     [self.processingTimer invalidate];
     [self.locationManager stopUpdatingLocation];
-    self.regionsNeedingState = nil;
-    _state = QKGeofenceManagerStateFailed;
-    MWLog(@"failed processing geofences");
+    self.regionsNeedingProcessing = nil;
+    [self _setState:QKGeofenceManagerStateFailed];
+    
+    if ([self.delegate respondsToSelector:@selector(geofenceManager:didFailWithError:)]) {
+        if ([error isKindOfClass:[NSError class]]) {
+            [self.delegate geofenceManager:self didFailWithError:error];
+        }
+        else {
+            NSError *timeoutError = [NSError errorWithDomain:@"Geofence manager timed out" code:kCFURLErrorTimedOut userInfo:nil];
+            [self.delegate geofenceManager:self didFailWithError:timeoutError];
+        }
+    }
 }
 
 - (void)finishedProcessingGeofences
 {
     [self.processingTimer invalidate];
     [self.locationManager stopUpdatingLocation];
-    self.regionsNeedingState = nil;
-    _state = QKGeofenceManagerStateIdle;
-    MWLog(@"done or stopped");
+    self.regionsNeedingProcessing = nil;
+    [self _setState:QKGeofenceManagerStateIdle];
 }
 
 #pragma mark - CLLocationManagerDelegate methods
@@ -229,22 +240,19 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
 - (void)locationManager:(CLLocationManager *)manager monitoringDidFailForRegion:(CLRegion *)region withError:(NSError *)error
 {    
     if ([CLLocationManager respondsToSelector:@selector(isMonitoringAvailableForClass:)]) {
-        if (![CLLocationManager isMonitoringAvailableForClass:[CLCircularRegion class]]) {
-            NSLog(@"Region monitoring unavailable, %@", error);
-            [self failedProcessingGeofences];
+        if (![CLLocationManager isMonitoringAvailableForClass:[CLCircularRegion class]]) { // Old iOS
+            [self failedProcessingGeofencesWithError:error];
             return;
         }
     }
     
-    if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusRestricted) {
-        //You need to authorize Location Services for the APP
-        NSLog(@"Location services disabled, %@", error);
-        [self failedProcessingGeofences];
+    if([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusRestricted) { //You need to authorize Location Services for the APP
+        [self failedProcessingGeofencesWithError:error];
         return;
     }
     
     BOOL a = (self.state == QKGeofenceManagerStateProcessing);
-    BOOL b = [self.regionsNeedingMonitoring containsObject:region.identifier];
+    BOOL b = [self.regionsNeedingProcessing containsObject:region.identifier];
 
     if (a && b) {
         NSLog(@"try again %@", region.identifier);
@@ -254,26 +262,24 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
 - (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
 {
-    if (![region.identifier isEqualToString:CurrentRegionName] && self.state != QKGeofenceManagerStateProcessing) {
-    // Don't generate an enter event yet. First refresh to turn on GPS and check the state after.
-        [self refreshFences];
+    if (![region.identifier isEqualToString:CurrentRegionName] && self.state != QKGeofenceManagerStateProcessing) { // Don't generate an enter event yet. First refresh to turn on GPS and check the state after.
+        [self reloadGeofences];
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
 {
-    if ([region.identifier isEqualToString:CurrentRegionName]) {
-    // We exited the current region, so we need to refresh.
-        [self refreshFences];
+    if ([region.identifier isEqualToString:CurrentRegionName]) { // We exited the current region, so we need to refresh.
+        [self reloadGeofences];
     }
-    else if ([self.delegate respondsToSelector:@selector(geofenceManager:isOutsideGeofence:)]) { // Exited a geofence.
-        [self.delegate geofenceManager:self isOutsideGeofence:region];
+    else if ([self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) { // Exited a geofence.
+        [self.delegate geofenceManager:self didExitGeofence:region];
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
 {
-    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsNeedingState containsObject:region.identifier]) {
+    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsNeedingProcessing containsObject:region.identifier]) {
         return;
     }
     
@@ -284,17 +290,11 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         else { // Keep attempting to find the current region.
             CLLocationDistance radius = [(CLCircularRegion *)region radius];
             CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:manager.location.coordinate radius:radius identifier:CurrentRegionName];
-            [manager performSelectorOnMainThread:@selector(requestStateForRegion:) withObject:currentRegion waitUntilDone:NO];
+            [manager performSelectorOnMainThread:@selector(startMonitoringForRegion:) withObject:currentRegion waitUntilDone:NO];
+            return;
         }
     }
-    else {
-    
-        if ([self.delegate respondsToSelector:@selector(geofenceManager:finishedProcessingGeofence:)]) {
-            if (![self.regionsNeedingMonitoring containsObject:region.identifier]) {
-                [self.delegate geofenceManager:self finishedProcessingGeofence:region];
-            }
-        }
-        
+    else {        
         if (state == CLRegionStateInside) {
             if ([self.delegate respondsToSelector:@selector(geofenceManager:isInsideGeofence:)]) {
                 [self.delegate geofenceManager:self isInsideGeofence:region];
@@ -303,38 +303,28 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         MWLog(@"processed %@", region.identifier);
     }
     
-    [self.regionsNeedingState removeObject:region.identifier];
+    [self.regionsNeedingProcessing removeObject:region.identifier];
 
-    if ([self.regionsNeedingState count] == 0 && self.regionsNeedingMonitoring count] == 0) { // If all regions have finished processing, finish up.
+    if ([self.regionsNeedingProcessing count] == 0) { // If all regions have finished processing, finish up.
         [self performSelectorOnMainThread:@selector(finishedProcessingGeofences) withObject:nil waitUntilDone:YES];
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLCircularRegion *)region
 {
-    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsNeedingMonitoring containsObject:region.identifier]) {
+    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsNeedingProcessing containsObject:region.identifier]) {
         return;
     }
     
-    if ([self.delegate respondsToSelector:@selector(geofenceManager:finishedProcessingGeofence:)]) {
-        if (![self.regionsNeedingState containsObject:region.identifier]) {
-            [self.delegate geofenceManager:self finishedProcessingGeofence:region];
-        }
-    }
-    
-    [self.regionsNeedingMonitoring removeObject:region.identifier];
-    
-    if ([self.regionsNeedingMonitoring count] == 0 && self.regionsNeedingState count] == 0) { // If all regions have finished processing, finish up.
-        [self performSelectorOnMainThread:@selector(finishedProcessingGeofences) withObject:nil waitUntilDone:YES];
+    if ([manager respondsToSelector:@selector(requestStateForRegion:)]) {
+        [manager requestStateForRegion:region];
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
 {
-    if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusRestricted) {
-    //You need to authorize Location Services for the APP
-        MWLog(@"Location services disabled");
-        [self failedProcessingGeofences];
+    if ([CLLocationManager authorizationStatus] == kCLAuthorizationStatusDenied || [CLLocationManager authorizationStatus] == kCLAuthorizationStatusRestricted) { //You need to authorize Location Services for the APP
+        [self failedProcessingGeofencesWithError:error];
         return;
     }
 }
@@ -342,7 +332,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
     if (self.state != QKGeofenceManagerStateProcessing) { // This is coming from significant location changes, since we are not processing anymore.
-        [self refreshFences];
+        [self reloadGeofences];
     }
     else {
         MWLog(@"location %@", manager.location);

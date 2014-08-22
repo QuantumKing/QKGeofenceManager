@@ -7,17 +7,6 @@
 
 #import <CoreLocation/CoreLocation.h>
 
-@class QKGeofenceManager;
-
-@protocol QKGeofenceManagerDelegate <NSObject>
-
-@optional
-- (void)geofenceManager:(QKGeofenceManager *)geofenceManager finishedProcessingGeofence:(CLCircularRegion *)geofence;
-- (void)geofenceManager:(QKGeofenceManager *)geofenceManager isInsideGeofence:(CLCircularRegion *)geofence;
-- (void)geofenceManager:(QKGeofenceManager *)geofenceManager isOutsideGeofence:(CLCircularRegion *)geofence;
-
-@end
-
 typedef enum _QKGeofenceManagerState : int16_t {
     
     QKGeofenceManagerStateIdle,
@@ -26,16 +15,33 @@ typedef enum _QKGeofenceManagerState : int16_t {
     
 } QKGeofenceManagerState;
 
+@class QKGeofenceManager;
+
+@protocol QKGeofenceManagerDataSource <NSObject>
+
+@required
+- (NSArray *)geofencesForGeofenceManager:(QKGeofenceManager *)geofenceManager;
+
+@end
+
+@protocol QKGeofenceManagerDelegate <NSObject>
+
+@optional
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager isInsideGeofence:(CLRegion *)geofence;
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didExitGeofence:(CLRegion *)geofence;
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didChangeState:(QKGeofenceManagerState)state;
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didFailWithError:(NSError *)error;
+
+@end
+
 @interface QKGeofenceManager : NSObject<CLLocationManagerDelegate>
 
 @property (nonatomic, weak) id<QKGeofenceManagerDelegate> delegate;
+@property (nonatomic, weak) id<QKGeofenceManagerDataSource> dataSource;
 @property (nonatomic, readonly) QKGeofenceManagerState state;
 
 + (instancetype)sharedGeofenceManager;
 
-- (void)refreshManager;
-- (void)addGeofences:(NSArray *)geofences;
-- (void)removeGeofences:(NSArray *)geofences;
-- (void)removeAllGeofences;
+- (void)reloadGeofences;
 
 @end
