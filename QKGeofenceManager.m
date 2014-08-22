@@ -202,7 +202,11 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
 #pragma mark - CLLocationManagerDelegate methods
 
 - (void)locationManager:(CLLocationManager *)manager monitoringDidFailForRegion:(CLRegion *)region withError:(NSError *)error
-{    
+{
+    if (self.state != QKGeofenceManagerStateProcessing || ![self.regionsBeingProcessed containsObject:region]) {
+        return;
+    }
+    
     if ([CLLocationManager respondsToSelector:@selector(isMonitoringAvailableForClass:)]) {
         if (![CLLocationManager isMonitoringAvailableForClass:[CLCircularRegion class]]) { // Old iOS
             [self failedProcessingGeofencesWithError:error];
@@ -215,13 +219,8 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         return;
     }
     
-    BOOL a = (self.state == QKGeofenceManagerStateProcessing);
-    BOOL b = [self.regionsBeingProcessed containsObject:region];
-
-    if (a && b) {
-        NSLog(@"try again %@", region.identifier);
-        [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:region];
-    }
+    NSLog(@"try again %@", region.identifier);
+    [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:region];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region
