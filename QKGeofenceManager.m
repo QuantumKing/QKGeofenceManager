@@ -11,7 +11,7 @@
 
 @property (nonatomic) CLLocationManager *locationManager;
 
-@property (nonatomic) NSMutableArray *regionsNeedingProcessing;
+@property (nonatomic) NSMutableSet *regionsNeedingProcessing;
 @property (nonatomic) NSMutableSet *regionsBeingProcessed;
 @property (nonatomic) NSMutableSet *nearestRegions;
 
@@ -114,7 +114,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         return;
     }
     
-    self.regionsNeedingProcessing = [NSMutableArray array];
+    self.regionsNeedingProcessing = [NSMutableSet set];
     self.regionsBeingProcessed = [NSMutableSet set];
     self.nearestRegions = [NSMutableSet set];
     
@@ -126,11 +126,9 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
             CLLocation *fenceCenter = [[CLLocation alloc] initWithLatitude:fence.center.latitude longitude:fence.center.longitude];
             CLLocationAccuracy accuracy = location.horizontalAccuracy;
             CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius - accuracy;
-            if ([fencesWithDistanceToBoundary count] < GeofenceMonitoringLimit) {
-                [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
-            }
-            else if (d_r < CurrentRegionMaxRadius) {
-                [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
+            [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
+            if (d_r < 0) {
+                [self.regionsNeedingProcessing addObject:fence];
             }
         }
     }
@@ -138,7 +136,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     [fencesWithDistanceToBoundary sortUsingComparator:^NSComparisonResult(NSArray *tuple1, NSArray *tuple2){
         return [[tuple1 lastObject] compare:[tuple2 lastObject]];
     }];
-
+    
     CLLocationDistance radius;
     if ([fencesWithDistanceToBoundary count] < GeofenceMonitoringLimit) {
         radius = CurrentRegionMaxRadius;
@@ -151,20 +149,31 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     radius *= CurrentRegionPaddingRatio;
     
     CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
-    [self.regionsNeedingProcessing addObject:currentRegion];
+    [self.nearestRegions addObject:currentRegion];
     
-    [fencesWithDistanceToBoundary enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSArray *tuple, NSUInteger idx, BOOL *stop){
+    [fencesWithDistanceToBoundary enumerateObjectsUsingBlock:^(NSArray *tuple, NSUInteger idx, BOOL *stop){
         CLRegion *fence = [tuple firstObject];
-        if ([self.regionsBeingProcessed count] < GeofenceMonitoringLimit) {
-            [self.regionsBeingProcessed addObject:fence];
+        if (idx < GeofenceMonitoringLimit) {
+            [self.nearestRegions addObject:fence];
+            [self.regionsNeedingProcessing removeObject:fence];
         }
         else {
-            [self.regionsNeedingProcessing addObject:fence];
-            if (idx < GeofenceMonitoringLimit) {
-                [self.nearestRegions addObject:fence];
+            CLLocationDistance d_r = [[tuple lastObject] doubleValue];
+            if (d_r < CurrentRegionMaxRadius) {
+                if ([self.regionsBeingProcessed count] < GeofenceMonitoringLimit) {
+                    [self.regionsBeingProcessed addObject:fence];
+                    [self.regionsNeedingProcessing removeObject:fence];
+                }
+                else {
+                    [self.regionsNeedingProcessing addObject:fence];
+                }
             }
         }
     }];
+    
+    if ([self.regionsBeingProcessed count] == 0) {
+        self.regionsBeingProcessed = self.nearestRegions;
+    }
     
     for (CLRegion *fence in self.regionsBeingProcessed) {
         [self.locationManager startMonitoringForRegion:fence];
@@ -268,15 +277,19 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     
     [self.regionsBeingProcessed removeObject:region];
     
-    if (![self.nearestRegions containsObject:region]) {
+    if (self.regionsBeingProcessed != self.nearestRegions) {
         [manager stopMonitoringForRegion:region];
-        
-        CLRegion *nextFenceNeedingProcessing = [self.regionsNeedingProcessing lastObject];
-        
+        CLRegion *nextFenceNeedingProcessing = [self.regionsNeedingProcessing anyObject];
         if (nextFenceNeedingProcessing) {
             [self.regionsBeingProcessed addObject:nextFenceNeedingProcessing];
-            [self.regionsNeedingProcessing removeLastObject];
+            [self.regionsNeedingProcessing removeObject:nextFenceNeedingProcessing];
             [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:nextFenceNeedingProcessing];
+        }
+        else if ([self.regionsBeingProcessed count] == 0) {
+            self.regionsBeingProcessed = self.nearestRegions;
+            for (CLRegion *fence in self.regionsBeingProcessed) {
+                [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:fence];
+            }
         }
     }
     
