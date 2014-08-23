@@ -125,9 +125,9 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
         if (fence.radius < self.locationManager.maximumRegionMonitoringDistance) {
             CLLocation *fenceCenter = [[CLLocation alloc] initWithLatitude:fence.center.latitude longitude:fence.center.longitude];
             CLLocationAccuracy accuracy = location.horizontalAccuracy;
-            CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius - accuracy;
+            CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius;
             [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
-            if (d_r < 0) {
+            if (d_r - accuracy < 0) {
                 [self.regionsNeedingProcessing addObject:fence];
             }
         }
@@ -136,20 +136,6 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     [fencesWithDistanceToBoundary sortUsingComparator:^NSComparisonResult(NSArray *tuple1, NSArray *tuple2){
         return [[tuple1 lastObject] compare:[tuple2 lastObject]];
     }];
-    
-    CLLocationDistance radius;
-    if ([fencesWithDistanceToBoundary count] < GeofenceMonitoringLimit) {
-        radius = CurrentRegionMaxRadius;
-    }
-    else {
-        NSArray *tuple = [fencesWithDistanceToBoundary firstObject];
-        radius = MIN(CurrentRegionMaxRadius, [[tuple lastObject] doubleValue]);
-        radius = MAX(radius, 2.0);
-    }
-    radius *= CurrentRegionPaddingRatio;
-    
-    CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
-    [self.nearestRegions addObject:currentRegion];
     
     [fencesWithDistanceToBoundary enumerateObjectsUsingBlock:^(NSArray *tuple, NSUInteger idx, BOOL *stop){
         CLRegion *fence = [tuple firstObject];
@@ -168,8 +154,26 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
                     [self.regionsNeedingProcessing addObject:fence];
                 }
             }
+            else {
+                *stop = YES;
+            }
         }
     }];
+    
+    CLLocationDistance radius;
+    if ([self.nearestRegions count] < GeofenceMonitoringLimit) {
+        radius = CurrentRegionMaxRadius;
+    }
+    else {
+        NSUInteger idx = [self.nearestRegions count] - 1;
+        NSArray *tuple = [fencesWithDistanceToBoundary objectAtIndex:idx];
+        radius = MIN(CurrentRegionMaxRadius, [[tuple lastObject] doubleValue]);
+        radius = MAX(radius, 2.0);
+    }
+    radius *= CurrentRegionPaddingRatio;
+    
+    CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
+    [self.nearestRegions addObject:currentRegion];
     
     if ([self.regionsBeingProcessed count] == 0) {
         self.regionsBeingProcessed = self.nearestRegions;
