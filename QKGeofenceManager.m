@@ -31,7 +31,7 @@ static const NSTimeInterval MaxTimeToProcessGeofences = 5.0;
 // iOS gives you a maximum of 20 regions to monitor. I use one for the current region.
 static const NSUInteger GeofenceMonitoringLimit = 20 - 1;
 
-static NSString *const CurrentRegionName = @"currentRegion";
+static NSString *const CurrentRegionName = @"qk_currentRegion";
 static const CLLocationDistance CurrentRegionMaxRadius = 1000;
 static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
@@ -159,7 +159,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
             }
         }
     }];
-    
+        
     CLLocationDistance radius;
     if ([self.nearestRegions count] < GeofenceMonitoringLimit) {
         radius = CurrentRegionMaxRadius;
@@ -260,25 +260,20 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
     }
     
     if ([region.identifier isEqualToString:CurrentRegionName]) {
-        if (state == CLRegionStateInside) {
-            NSLog(@"found current region %@", region);
-        }
-        else { // Keep attempting to find the current region.
+        if (state != CLRegionStateInside) { // Keep attempting to find the current region.
             CLLocationDistance radius = [(CLCircularRegion *)region radius];
             CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:manager.location.coordinate radius:radius identifier:CurrentRegionName];
             [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:currentRegion];
             return;
         }
     }
-    else {        
-        if (state == CLRegionStateInside) {
-            if ([self.delegate respondsToSelector:@selector(geofenceManager:isInsideGeofence:)]) {
-                [self.delegate geofenceManager:self isInsideGeofence:region];
-            }
+    else if (state == CLRegionStateInside) {
+        if ([self.delegate respondsToSelector:@selector(geofenceManager:isInsideGeofence:)]) {
+            [self.delegate geofenceManager:self isInsideGeofence:region];
         }
-        NSLog(@"processed %@", region.identifier);
     }
     
+    NSLog(@"processed %@ - %im", region.identifier, (int)[(CLCircularRegion *)region radius]);
     [self.regionsBeingProcessed removeObject:region];
     
     if (self.regionsBeingProcessed != self.nearestRegions) {
