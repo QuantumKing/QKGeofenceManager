@@ -241,7 +241,7 @@ static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
 - (void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region
 {
-    if ([region.identifier isEqualToString:CurrentRegionName]) { // We exited the current region, so we need to refresh.
+    if ([region.identifier isEqualToString:CurrentRegionName] && self.state != QKGeofenceManagerStateProcessing) { // We exited the current region, so we need to refresh.
         [self reloadGeofences];
     }
     else if ([self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) { // Exited a geofence.
