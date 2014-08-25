@@ -220,6 +220,7 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:[self.insideRegions allObjects] forKey:QKInsideRegionsDefaultsKey];
+    [defaults synchronize];
     
     [self _setState:QKGeofenceManagerStateFailed];
     
@@ -240,9 +241,10 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     [self.locationManager stopUpdatingLocation];
     self.regionsNeedingProcessing = nil;
     self.regionsBeingProcessed = nil;
-        
+    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:[self.insideRegions allObjects] forKey:QKInsideRegionsDefaultsKey];
+    [defaults synchronize];
     
     [self _setState:QKGeofenceManagerStateIdle];
 }
