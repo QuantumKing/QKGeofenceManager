@@ -24,8 +24,8 @@
 
 @synthesize state = _state;
 
-// iOS gives you 10 seconds in total to process enter/exit events, I use 5 seconds to get a lock on the GPS
-// and the rest is used to process the geofences.
+// iOS gives you 10 seconds in total to process enter/exit events, I use up to 5 seconds to process the geofences
+// and the rest to get a lock on the GPS.
 static const NSTimeInterval MaxTimeToProcessGeofences = 5.0;
 
 // iOS gives you a maximum of 20 regions to monitor. I use one for the current region.
