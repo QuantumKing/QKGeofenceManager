@@ -46,7 +46,7 @@ QKGeofenceManager calls `geofenceManager:isInsideGeofence:` when the user enters
 
 ##Demo
 
-The demo provided allows a user to add geofences and display them in a table view. When the refresh button is pressed, `QKGeofenceManager` does its magic and determines which geofences the user is inside.
+The demo provided allows a user to add geofences and display them in a table view. When the refresh button is pressed, `QKGeofenceManager` does its magic and determines which geofences the user is inside. Moving in and out of geofences will update the table view accordingly.
 
 ![](https://raw.githubusercontent.com/QuantumKing/QKGeofenceManager/master/QKGeofenceManagerDemo/screenshots/IMG_0058.PNG)
 
