@@ -11,15 +11,20 @@
 
 @property (nonatomic) CLLocationManager *locationManager;
 
+// Geofences queued up to be processed.
 @property (nonatomic) NSMutableSet *regionsNeedingProcessing;
+
+// Geofences currently being processed.
 @property (nonatomic) NSMutableSet *regionsBeingProcessed;
+
+// The 19 nearest geofences.
 @property (nonatomic) NSMutableSet *nearestRegions;
 
 // Add region identifiers which user is inside.
-@property (nonatomic) NSMutableSet *insideRegions;
+@property (nonatomic) NSMutableSet *insideRegionIds;
 
 // Regions which user was previously inside
-@property (nonatomic) NSMutableSet *previouslyInsideRegions;
+@property (nonatomic) NSMutableSet *previouslyInsideRegionIds;
 
 // Processing happens while processingTimer is valid.
 @property (nonatomic) NSTimer *processingTimer;
@@ -43,6 +48,7 @@ static NSString *const CurrentRegionName = @"qk_currentRegion";
 static const CLLocationDistance CurrentRegionMaxRadius = 1000;
 static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
+// NSUserDefaults key for storing insideRegionIds.
 static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
 
 + (instancetype)sharedGeofenceManager
@@ -115,16 +121,14 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
 {
     _QK_isTransitioning = YES;
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSArray *previouslyInsideRegions = [defaults arrayForKey:QKInsideRegionsDefaultsKey];
-    self.previouslyInsideRegions = [NSMutableSet setWithArray:previouslyInsideRegions];
-    self.insideRegions = [NSMutableSet set];
+    NSArray *previouslyInsideRegionIds = [defaults arrayForKey:QKInsideRegionsDefaultsKey];
+    self.previouslyInsideRegionIds = [NSMutableSet setWithArray:previouslyInsideRegionIds];
     [self _QK_reloadGeofences];
 }
 
 - (void)reloadGeofences
 {
     _QK_isTransitioning = NO;
-    self.insideRegions = [NSMutableSet set];
     [self _QK_reloadGeofences];
 }
 
@@ -144,7 +148,8 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     self.regionsNeedingProcessing = [NSMutableSet set];
     self.regionsBeingProcessed = [NSMutableSet set];
     self.nearestRegions = [NSMutableSet set];
-    
+    self.insideRegionIds = [NSMutableSet set];
+
     NSArray *allGeofences = [self.dataSource geofencesForGeofenceManager:self];
     NSMutableArray *fencesWithDistanceToBoundary = [NSMutableArray array];
 
@@ -219,7 +224,7 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     self.regionsBeingProcessed = nil;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:[self.insideRegions allObjects] forKey:QKInsideRegionsDefaultsKey];
+    [defaults setObject:[self.insideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
     [defaults synchronize];
     
     [self _setState:QKGeofenceManagerStateFailed];
@@ -243,7 +248,7 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     self.regionsBeingProcessed = nil;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:[self.insideRegions allObjects] forKey:QKInsideRegionsDefaultsKey];
+    [defaults setObject:[self.insideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
     [defaults synchronize];
     
     [self _setState:QKGeofenceManagerStateIdle];
@@ -305,14 +310,21 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
         }
     }
     else if (state == CLRegionStateInside) {
-        [self.insideRegions addObject:region.identifier];
+        [self.insideRegionIds addObject:region.identifier];
         if ([self.delegate respondsToSelector:@selector(geofenceManager:isInsideGeofence:)]) {
-            [self.delegate geofenceManager:self isInsideGeofence:region];
+            if (_QK_isTransitioning) {
+                if (![self.previouslyInsideRegionIds containsObject:region.identifier]) {
+                    [self.delegate geofenceManager:self isInsideGeofence:region];
+                }
+            }
+            else {
+                [self.delegate geofenceManager:self isInsideGeofence:region];
+            }
         }
     }
     else if (state == CLRegionStateOutside && _QK_isTransitioning) {
         if ([self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) {
-            if ([self.previouslyInsideRegions containsObject:region.identifier]) {
+            if ([self.previouslyInsideRegionIds containsObject:region.identifier]) {
                 [self.delegate geofenceManager:self didExitGeofence:region];
             }
         }
@@ -365,9 +377,6 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
 {
     if (self.state != QKGeofenceManagerStateProcessing) { // This is coming from significant location changes, since we are not processing anymore.
         [self _transition_reloadGeofences];
-    }
-    else {
-        NSLog(@"location %@", manager.location);
     }
 }
 
