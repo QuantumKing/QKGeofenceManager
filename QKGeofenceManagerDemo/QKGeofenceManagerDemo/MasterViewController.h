@@ -11,7 +11,7 @@
 
 #import "QKGeofenceManager.h"
 
-@interface MasterViewController : UITableViewController <NSFetchedResultsControllerDelegate,QKGeofenceManagerDataSource,QKGeofenceManagerDelegate>
+@interface MasterViewController : UITableViewController <NSFetchedResultsControllerDelegate,QKGeofenceManagerDataSource,QKGeofenceManagerDelegate,CLLocationManagerDelegate>
 
 @property (strong, nonatomic) NSFetchedResultsController *fetchedResultsController;
 @property (strong, nonatomic) NSManagedObjectContext *managedObjectContext;

@@ -13,6 +13,7 @@
 
 @property (nonatomic) NSMutableSet *insideGeofenceIds;
 @property (nonatomic) NSMutableArray *rightBarButtonItems;
+@property (nonatomic) CLLocationManager *locationManager;
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 
@@ -37,6 +38,11 @@
     
     self.rightBarButtonItems = [NSMutableArray arrayWithObjects:refreshButton, addButton, nil];
     self.navigationItem.rightBarButtonItems = self.rightBarButtonItems;
+    
+    // Get an initial fix on user's current location. Used as a default for new geofences.
+    self.locationManager = [[CLLocationManager alloc] init];
+    self.locationManager.delegate = self;
+    [self.locationManager startUpdatingLocation];
 }
 
 - (void)didReceiveMemoryWarning
@@ -73,8 +79,8 @@
     // If appropriate, configure the new managed object.
     // Normally you should use accessor methods, but using KVC here avoids the need to add a custom class to the template.
     [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
-    [newManagedObject setValue:@0 forKey:@"lat"];
-    [newManagedObject setValue:@0 forKey:@"lon"];
+    [newManagedObject setValue:@(self.locationManager.location.coordinate.latitude) forKey:@"lat"];
+    [newManagedObject setValue:@(self.locationManager.location.coordinate.longitude) forKey:@"lon"];
     [newManagedObject setValue:@100 forKey:@"radius"];
     
     NSInteger n = [self tableView:self.tableView numberOfRowsInSection:0];
@@ -126,6 +132,13 @@
         
         self.navigationItem.rightBarButtonItems = self.rightBarButtonItems;
     }
+}
+
+#pragma mark - Location Manager
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
+{
+    [self.locationManager stopUpdatingLocation];
 }
 
 #pragma mark - Table View
@@ -297,6 +310,9 @@
     
     if ([self.insideGeofenceIds containsObject:identifier]) {
         cell.backgroundColor = [UIColor colorWithRed:0 green:1 blue:0 alpha:0.3];
+    }
+    else {
+        cell.backgroundColor = nil;
     }
 }
 
