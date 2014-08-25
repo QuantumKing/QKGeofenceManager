@@ -20,7 +20,7 @@ Sets out to improve `CoreLocation`'s region monitoring by increasing the limit o
 
 @end
 ```
-It uses the dataSource/delegate pattern to provide an array geofences
+It uses the dataSource/delegate pattern to provide an array of `CLCircularRegion`s
 
 ``` obj-c
 @protocol QKGeofenceManagerDataSource <NSObject>
