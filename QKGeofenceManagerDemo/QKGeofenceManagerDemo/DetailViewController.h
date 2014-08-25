@@ -9,10 +9,11 @@
 #import <UIKit/UIKit.h>
 #import <MapKit/MapKit.h>
 
-@interface DetailViewController : UIViewController<MKMapViewDelegate>
+@interface DetailViewController : UIViewController<MKMapViewDelegate,UITextFieldDelegate>
 
 @property (nonatomic) id geofence;
 @property (nonatomic, weak) IBOutlet MKMapView *mapView;
 @property (nonatomic, weak) IBOutlet UITextField *identifierTextField;
+@property (nonatomic, weak) IBOutlet UITextField *radiusTextField;
 
 @end

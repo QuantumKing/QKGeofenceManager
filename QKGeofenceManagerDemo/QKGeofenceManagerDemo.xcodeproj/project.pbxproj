@@ -25,6 +25,7 @@
 		25806E2119AB944C00CC7B5E /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806DFC19AB944B00CC7B5E /* CoreData.framework */; };
 		25806E2919AB944C00CC7B5E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 25806E2719AB944C00CC7B5E /* InfoPlist.strings */; };
 		25806E2B19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 25806E2A19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.m */; };
+		25806E3719ABA5F600CC7B5E /* QKGeofenceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 25806E3619ABA5F600CC7B5E /* QKGeofenceManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,8 @@
 		25806E2619AB944C00CC7B5E /* QKGeofenceManagerDemoTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "QKGeofenceManagerDemoTests-Info.plist"; sourceTree = "<group>"; };
 		25806E2819AB944C00CC7B5E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		25806E2A19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QKGeofenceManagerDemoTests.m; sourceTree = "<group>"; };
+		25806E3519ABA5F600CC7B5E /* QKGeofenceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKGeofenceManager.h; sourceTree = "<group>"; };
+		25806E3619ABA5F600CC7B5E /* QKGeofenceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKGeofenceManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +95,7 @@
 		25806DEA19AB944B00CC7B5E = {
 			isa = PBXGroup;
 			children = (
+				25806E3419ABA5F600CC7B5E /* QKGeofenceManager */,
 				25806DFE19AB944B00CC7B5E /* QKGeofenceManagerDemo */,
 				25806E2419AB944C00CC7B5E /* QKGeofenceManagerDemoTests */,
 				25806DF519AB944B00CC7B5E /* Frameworks */,
@@ -164,6 +168,16 @@
 				25806E2719AB944C00CC7B5E /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		25806E3419ABA5F600CC7B5E /* QKGeofenceManager */ = {
+			isa = PBXGroup;
+			children = (
+				25806E3519ABA5F600CC7B5E /* QKGeofenceManager.h */,
+				25806E3619ABA5F600CC7B5E /* QKGeofenceManager.m */,
+			);
+			name = QKGeofenceManager;
+			path = ../QKGeofenceManager;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -268,6 +282,7 @@
 				25806E0919AB944B00CC7B5E /* AppDelegate.m in Sources */,
 				25806E0F19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodeld in Sources */,
 				25806E0519AB944B00CC7B5E /* main.m in Sources */,
+				25806E3719ABA5F600CC7B5E /* QKGeofenceManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

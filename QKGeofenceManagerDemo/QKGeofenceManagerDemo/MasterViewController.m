@@ -7,10 +7,12 @@
 //
 
 #import "MasterViewController.h"
-
 #import "DetailViewController.h"
 
 @interface MasterViewController ()
+
+@property (nonatomic) NSMutableSet *insideGeofenceIds;
+@property (nonatomic) NSMutableArray *rightBarButtonItems;
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 
@@ -28,15 +30,38 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     self.navigationItem.leftBarButtonItem = self.editButtonItem;
-
+    
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
-    self.navigationItem.rightBarButtonItem = addButton;
+    
+    UIBarButtonItem *refreshButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(reloadGeofences)];
+    
+    self.rightBarButtonItems = [NSMutableArray arrayWithObjects:refreshButton, addButton, nil];
+    self.navigationItem.rightBarButtonItems = self.rightBarButtonItems;
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)reloadGeofences
+{
+    self.insideGeofenceIds = [NSMutableSet set];
+    
+    QKGeofenceManager *geofenceManager = [QKGeofenceManager sharedGeofenceManager];
+    geofenceManager.delegate = self;
+    geofenceManager.dataSource = self;
+    [geofenceManager reloadGeofences];
+    
+    UIActivityIndicatorView *activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    [activityView startAnimating];
+    UIBarButtonItem *spinnerItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
+    
+    [self.rightBarButtonItems removeObjectAtIndex:0];
+    [self.rightBarButtonItems insertObject:spinnerItem atIndex:0];
+    
+    self.navigationItem.rightBarButtonItems = self.rightBarButtonItems;
 }
 
 - (void)insertNewObject:(id)sender
@@ -63,6 +88,43 @@
          // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
+    }
+}
+
+#pragma mark - Geofence Manager
+
+- (NSArray *)geofencesForGeofenceManager:(QKGeofenceManager *)geofenceManager
+{
+    NSArray *fetchedObjects = [self.fetchedResultsController fetchedObjects];
+    NSMutableArray *geofences = [NSMutableArray arrayWithCapacity:[fetchedObjects count]];
+    for (NSManagedObject *object in fetchedObjects) {
+        NSString *identifier = [object valueForKey:@"identifier"];
+        CLLocationDegrees lat = [[object valueForKey:@"lat"] doubleValue];
+        CLLocationDegrees lon = [[object valueForKey:@"lon"] doubleValue];
+        CLLocationDistance radius = [[object valueForKey:@"radius"] doubleValue];
+        CLLocationCoordinate2D center = CLLocationCoordinate2DMake(lat, lon);
+        CLCircularRegion *geofence = [[CLCircularRegion alloc] initWithCenter:center radius:radius identifier:identifier];
+        [geofences addObject:geofence];
+    }
+    return geofences;
+}
+
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager isInsideGeofence:(CLRegion *)geofence
+{
+    [self.insideGeofenceIds addObject:geofence.identifier];
+}
+
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didChangeState:(QKGeofenceManagerState)state
+{
+    if (state == QKGeofenceManagerStateIdle) {
+        [self.tableView reloadData];
+        
+        UIBarButtonItem *refreshButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(reloadGeofences)];
+
+        [self.rightBarButtonItems removeObjectAtIndex:0];
+        [self.rightBarButtonItems insertObject:refreshButton atIndex:0];
+        
+        self.navigationItem.rightBarButtonItems = self.rightBarButtonItems;
     }
 }
 
@@ -225,12 +287,17 @@
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
     NSManagedObject *object = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.textLabel.text = [[object valueForKey:@"identifier"] description];
+    NSNumber *radius = [object valueForKey:@"radius"];
+    NSString *identifier = [object valueForKey:@"identifier"];
+    cell.textLabel.text = [NSString stringWithFormat:@"%@ (R=%@m)", identifier, radius];
     
     NSNumber *lat = [object valueForKey:@"lat"];
     NSNumber *lon = [object valueForKey:@"lon"];
-    NSNumber *radius = [object valueForKey:@"radius"];
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@ - r=%@", lat, lon, radius];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@", lat, lon];
+    
+    if ([self.insideGeofenceIds containsObject:identifier]) {
+        cell.backgroundColor = [UIColor colorWithRed:0 green:1 blue:0 alpha:0.3];
+    }
 }
 
 @end
