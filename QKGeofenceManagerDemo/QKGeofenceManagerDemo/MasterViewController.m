@@ -81,7 +81,7 @@
     [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
     [newManagedObject setValue:@(self.locationManager.location.coordinate.latitude) forKey:@"lat"];
     [newManagedObject setValue:@(self.locationManager.location.coordinate.longitude) forKey:@"lon"];
-    [newManagedObject setValue:@100 forKey:@"radius"];
+    [newManagedObject setValue:@20 forKey:@"radius"];
     
     NSInteger n = [self tableView:self.tableView numberOfRowsInSection:0];
     NSString *identifier = [NSString stringWithFormat:@"Geofence-%i", n+1];
