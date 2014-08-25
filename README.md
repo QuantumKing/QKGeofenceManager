@@ -43,3 +43,11 @@ and to deliver inside/exit events.
 @end
 ```
 QKGeofenceManager calls `geofenceManager:isInsideGeofence:` when the user enters or is currently inside the geofence. `geofenceManager:didChangeState:` is called when the manager changes from one of three states: `QKGeofenceManagerStateIdle`, `QKGeofenceManagerStateProcessing` and `QKGeofenceManagerStateFailed`.
+
+##Demo
+
+The demo provided allows a user to add geofences and display them in a table view. When the refresh button is pressed, `QKGeofenceManager` does its magic and determines which geofences the user is inside.
+
+![](https://raw.githubusercontent.com/QuantumKing/QKGeofenceManager/master/QKGeofenceManagerDemo/screenshots/IMG_0058.PNG)
+
+![](https://raw.githubusercontent.com/QuantumKing/QKGeofenceManager/master/QKGeofenceManagerDemo/screenshots/IMG_0059.PNG)
