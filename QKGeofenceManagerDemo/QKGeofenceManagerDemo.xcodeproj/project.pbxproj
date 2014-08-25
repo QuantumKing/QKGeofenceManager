@@ -1,0 +1,500 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		25806DF719AB944B00CC7B5E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806DF619AB944B00CC7B5E /* Foundation.framework */; };
+		25806DF919AB944B00CC7B5E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806DF819AB944B00CC7B5E /* CoreGraphics.framework */; };
+		25806DFB19AB944B00CC7B5E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806DFA19AB944B00CC7B5E /* UIKit.framework */; };
+		25806DFD19AB944B00CC7B5E /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806DFC19AB944B00CC7B5E /* CoreData.framework */; };
+		25806E0319AB944B00CC7B5E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 25806E0119AB944B00CC7B5E /* InfoPlist.strings */; };
+		25806E0519AB944B00CC7B5E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 25806E0419AB944B00CC7B5E /* main.m */; };
+		25806E0919AB944B00CC7B5E /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 25806E0819AB944B00CC7B5E /* AppDelegate.m */; };
+		25806E0C19AB944B00CC7B5E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 25806E0A19AB944B00CC7B5E /* Main.storyboard */; };
+		25806E0F19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 25806E0D19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodeld */; };
+		25806E1219AB944B00CC7B5E /* MasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 25806E1119AB944B00CC7B5E /* MasterViewController.m */; };
+		25806E1519AB944B00CC7B5E /* DetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 25806E1419AB944B00CC7B5E /* DetailViewController.m */; };
+		25806E1719AB944B00CC7B5E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 25806E1619AB944B00CC7B5E /* Images.xcassets */; };
+		25806E1E19AB944C00CC7B5E /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806E1D19AB944C00CC7B5E /* XCTest.framework */; };
+		25806E1F19AB944C00CC7B5E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806DF619AB944B00CC7B5E /* Foundation.framework */; };
+		25806E2019AB944C00CC7B5E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806DFA19AB944B00CC7B5E /* UIKit.framework */; };
+		25806E2119AB944C00CC7B5E /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25806DFC19AB944B00CC7B5E /* CoreData.framework */; };
+		25806E2919AB944C00CC7B5E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 25806E2719AB944C00CC7B5E /* InfoPlist.strings */; };
+		25806E2B19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 25806E2A19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		25806E2219AB944C00CC7B5E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 25806DEB19AB944B00CC7B5E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 25806DF219AB944B00CC7B5E;
+			remoteInfo = QKGeofenceManagerDemo;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		25806DF319AB944B00CC7B5E /* QKGeofenceManagerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QKGeofenceManagerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		25806DF619AB944B00CC7B5E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		25806DF819AB944B00CC7B5E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		25806DFA19AB944B00CC7B5E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		25806DFC19AB944B00CC7B5E /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		25806E0019AB944B00CC7B5E /* QKGeofenceManagerDemo-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "QKGeofenceManagerDemo-Info.plist"; sourceTree = "<group>"; };
+		25806E0219AB944B00CC7B5E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		25806E0419AB944B00CC7B5E /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		25806E0619AB944B00CC7B5E /* QKGeofenceManagerDemo-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "QKGeofenceManagerDemo-Prefix.pch"; sourceTree = "<group>"; };
+		25806E0719AB944B00CC7B5E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		25806E0819AB944B00CC7B5E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		25806E0B19AB944B00CC7B5E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		25806E0E19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = QKGeofenceManagerDemo.xcdatamodel; sourceTree = "<group>"; };
+		25806E1019AB944B00CC7B5E /* MasterViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MasterViewController.h; sourceTree = "<group>"; };
+		25806E1119AB944B00CC7B5E /* MasterViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MasterViewController.m; sourceTree = "<group>"; };
+		25806E1319AB944B00CC7B5E /* DetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DetailViewController.h; sourceTree = "<group>"; };
+		25806E1419AB944B00CC7B5E /* DetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DetailViewController.m; sourceTree = "<group>"; };
+		25806E1619AB944B00CC7B5E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		25806E1C19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QKGeofenceManagerDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		25806E1D19AB944C00CC7B5E /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		25806E2619AB944C00CC7B5E /* QKGeofenceManagerDemoTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "QKGeofenceManagerDemoTests-Info.plist"; sourceTree = "<group>"; };
+		25806E2819AB944C00CC7B5E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		25806E2A19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QKGeofenceManagerDemoTests.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		25806DF019AB944B00CC7B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25806DF919AB944B00CC7B5E /* CoreGraphics.framework in Frameworks */,
+				25806DFD19AB944B00CC7B5E /* CoreData.framework in Frameworks */,
+				25806DFB19AB944B00CC7B5E /* UIKit.framework in Frameworks */,
+				25806DF719AB944B00CC7B5E /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		25806E1919AB944C00CC7B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25806E1E19AB944C00CC7B5E /* XCTest.framework in Frameworks */,
+				25806E2119AB944C00CC7B5E /* CoreData.framework in Frameworks */,
+				25806E2019AB944C00CC7B5E /* UIKit.framework in Frameworks */,
+				25806E1F19AB944C00CC7B5E /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		25806DEA19AB944B00CC7B5E = {
+			isa = PBXGroup;
+			children = (
+				25806DFE19AB944B00CC7B5E /* QKGeofenceManagerDemo */,
+				25806E2419AB944C00CC7B5E /* QKGeofenceManagerDemoTests */,
+				25806DF519AB944B00CC7B5E /* Frameworks */,
+				25806DF419AB944B00CC7B5E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		25806DF419AB944B00CC7B5E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				25806DF319AB944B00CC7B5E /* QKGeofenceManagerDemo.app */,
+				25806E1C19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		25806DF519AB944B00CC7B5E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				25806DF619AB944B00CC7B5E /* Foundation.framework */,
+				25806DF819AB944B00CC7B5E /* CoreGraphics.framework */,
+				25806DFA19AB944B00CC7B5E /* UIKit.framework */,
+				25806DFC19AB944B00CC7B5E /* CoreData.framework */,
+				25806E1D19AB944C00CC7B5E /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		25806DFE19AB944B00CC7B5E /* QKGeofenceManagerDemo */ = {
+			isa = PBXGroup;
+			children = (
+				25806E0719AB944B00CC7B5E /* AppDelegate.h */,
+				25806E0819AB944B00CC7B5E /* AppDelegate.m */,
+				25806E0A19AB944B00CC7B5E /* Main.storyboard */,
+				25806E1019AB944B00CC7B5E /* MasterViewController.h */,
+				25806E1119AB944B00CC7B5E /* MasterViewController.m */,
+				25806E1319AB944B00CC7B5E /* DetailViewController.h */,
+				25806E1419AB944B00CC7B5E /* DetailViewController.m */,
+				25806E1619AB944B00CC7B5E /* Images.xcassets */,
+				25806E0D19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodeld */,
+				25806DFF19AB944B00CC7B5E /* Supporting Files */,
+			);
+			path = QKGeofenceManagerDemo;
+			sourceTree = "<group>";
+		};
+		25806DFF19AB944B00CC7B5E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				25806E0019AB944B00CC7B5E /* QKGeofenceManagerDemo-Info.plist */,
+				25806E0119AB944B00CC7B5E /* InfoPlist.strings */,
+				25806E0419AB944B00CC7B5E /* main.m */,
+				25806E0619AB944B00CC7B5E /* QKGeofenceManagerDemo-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		25806E2419AB944C00CC7B5E /* QKGeofenceManagerDemoTests */ = {
+			isa = PBXGroup;
+			children = (
+				25806E2A19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.m */,
+				25806E2519AB944C00CC7B5E /* Supporting Files */,
+			);
+			path = QKGeofenceManagerDemoTests;
+			sourceTree = "<group>";
+		};
+		25806E2519AB944C00CC7B5E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				25806E2619AB944C00CC7B5E /* QKGeofenceManagerDemoTests-Info.plist */,
+				25806E2719AB944C00CC7B5E /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		25806DF219AB944B00CC7B5E /* QKGeofenceManagerDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 25806E2E19AB944D00CC7B5E /* Build configuration list for PBXNativeTarget "QKGeofenceManagerDemo" */;
+			buildPhases = (
+				25806DEF19AB944B00CC7B5E /* Sources */,
+				25806DF019AB944B00CC7B5E /* Frameworks */,
+				25806DF119AB944B00CC7B5E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QKGeofenceManagerDemo;
+			productName = QKGeofenceManagerDemo;
+			productReference = 25806DF319AB944B00CC7B5E /* QKGeofenceManagerDemo.app */;
+			productType = "com.apple.product-type.application";
+		};
+		25806E1B19AB944C00CC7B5E /* QKGeofenceManagerDemoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 25806E3119AB944D00CC7B5E /* Build configuration list for PBXNativeTarget "QKGeofenceManagerDemoTests" */;
+			buildPhases = (
+				25806E1819AB944C00CC7B5E /* Sources */,
+				25806E1919AB944C00CC7B5E /* Frameworks */,
+				25806E1A19AB944C00CC7B5E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				25806E2319AB944C00CC7B5E /* PBXTargetDependency */,
+			);
+			name = QKGeofenceManagerDemoTests;
+			productName = QKGeofenceManagerDemoTests;
+			productReference = 25806E1C19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		25806DEB19AB944B00CC7B5E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Eric Webster";
+				TargetAttributes = {
+					25806E1B19AB944C00CC7B5E = {
+						TestTargetID = 25806DF219AB944B00CC7B5E;
+					};
+				};
+			};
+			buildConfigurationList = 25806DEE19AB944B00CC7B5E /* Build configuration list for PBXProject "QKGeofenceManagerDemo" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 25806DEA19AB944B00CC7B5E;
+			productRefGroup = 25806DF419AB944B00CC7B5E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				25806DF219AB944B00CC7B5E /* QKGeofenceManagerDemo */,
+				25806E1B19AB944C00CC7B5E /* QKGeofenceManagerDemoTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		25806DF119AB944B00CC7B5E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25806E1719AB944B00CC7B5E /* Images.xcassets in Resources */,
+				25806E0319AB944B00CC7B5E /* InfoPlist.strings in Resources */,
+				25806E0C19AB944B00CC7B5E /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		25806E1A19AB944C00CC7B5E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25806E2919AB944C00CC7B5E /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		25806DEF19AB944B00CC7B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25806E1519AB944B00CC7B5E /* DetailViewController.m in Sources */,
+				25806E1219AB944B00CC7B5E /* MasterViewController.m in Sources */,
+				25806E0919AB944B00CC7B5E /* AppDelegate.m in Sources */,
+				25806E0F19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodeld in Sources */,
+				25806E0519AB944B00CC7B5E /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		25806E1819AB944C00CC7B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25806E2B19AB944C00CC7B5E /* QKGeofenceManagerDemoTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		25806E2319AB944C00CC7B5E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 25806DF219AB944B00CC7B5E /* QKGeofenceManagerDemo */;
+			targetProxy = 25806E2219AB944C00CC7B5E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		25806E0119AB944B00CC7B5E /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				25806E0219AB944B00CC7B5E /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		25806E0A19AB944B00CC7B5E /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				25806E0B19AB944B00CC7B5E /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		25806E2719AB944C00CC7B5E /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				25806E2819AB944C00CC7B5E /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		25806E2C19AB944D00CC7B5E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		25806E2D19AB944D00CC7B5E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		25806E2F19AB944D00CC7B5E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QKGeofenceManagerDemo/QKGeofenceManagerDemo-Prefix.pch";
+				INFOPLIST_FILE = "QKGeofenceManagerDemo/QKGeofenceManagerDemo-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		25806E3019AB944D00CC7B5E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QKGeofenceManagerDemo/QKGeofenceManagerDemo-Prefix.pch";
+				INFOPLIST_FILE = "QKGeofenceManagerDemo/QKGeofenceManagerDemo-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		25806E3219AB944D00CC7B5E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/QKGeofenceManagerDemo.app/QKGeofenceManagerDemo";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QKGeofenceManagerDemo/QKGeofenceManagerDemo-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "QKGeofenceManagerDemoTests/QKGeofenceManagerDemoTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		25806E3319AB944D00CC7B5E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/QKGeofenceManagerDemo.app/QKGeofenceManagerDemo";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "QKGeofenceManagerDemo/QKGeofenceManagerDemo-Prefix.pch";
+				INFOPLIST_FILE = "QKGeofenceManagerDemoTests/QKGeofenceManagerDemoTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		25806DEE19AB944B00CC7B5E /* Build configuration list for PBXProject "QKGeofenceManagerDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25806E2C19AB944D00CC7B5E /* Debug */,
+				25806E2D19AB944D00CC7B5E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		25806E2E19AB944D00CC7B5E /* Build configuration list for PBXNativeTarget "QKGeofenceManagerDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25806E2F19AB944D00CC7B5E /* Debug */,
+				25806E3019AB944D00CC7B5E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		25806E3119AB944D00CC7B5E /* Build configuration list for PBXNativeTarget "QKGeofenceManagerDemoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25806E3219AB944D00CC7B5E /* Debug */,
+				25806E3319AB944D00CC7B5E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		25806E0D19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				25806E0E19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodel */,
+			);
+			currentVersion = 25806E0E19AB944B00CC7B5E /* QKGeofenceManagerDemo.xcdatamodel */;
+			path = QKGeofenceManagerDemo.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 25806DEB19AB944B00CC7B5E /* Project object */;
+}
