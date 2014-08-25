@@ -120,6 +120,12 @@
     [self.insideGeofenceIds addObject:geofence.identifier];
 }
 
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didExitGeofence:(CLRegion *)geofence
+{
+    [self.insideGeofenceIds removeObject:geofence.identifier];
+    [self.tableView reloadData];
+}
+
 - (void)geofenceManager:(QKGeofenceManager *)geofenceManager didChangeState:(QKGeofenceManagerState)state
 {
     if (state == QKGeofenceManagerStateIdle) {
