@@ -1,4 +1,45 @@
 QKGeofenceManager
 =================
 
-Geofencing library for iOS
+Sets out to improve `CoreLocation`'s region monitoring by increasing the limit of regions from 20 to (theoretically) unlimited. It also helps by covering some of the boilerplate error handling to make region monitoring a smoother experience.
+
+##Usage
+
+`QKGeofenceManager` has the following interface:
+
+``` obj-c
+@interface QKGeofenceManager : NSObject<CLLocationManagerDelegate>
+
+@property (nonatomic, weak) id<QKGeofenceManagerDelegate> delegate;
+@property (nonatomic, weak) id<QKGeofenceManagerDataSource> dataSource;
+@property (nonatomic, readonly) QKGeofenceManagerState state;
+
++ (instancetype)sharedGeofenceManager;
+
+- (void)reloadGeofences;
+
+@end
+```
+It uses the dataSource/delegate pattern to provide an array geofences
+
+``` obj-c
+@protocol QKGeofenceManagerDataSource <NSObject>
+
+@required
+- (NSArray *)geofencesForGeofenceManager:(QKGeofenceManager *)geofenceManager;
+
+@end
+```
+and to deliver inside/exit events.
+``` obj-c
+@protocol QKGeofenceManagerDelegate <NSObject>
+
+@optional
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager isInsideGeofence:(CLRegion *)geofence;
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didExitGeofence:(CLRegion *)geofence;
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didChangeState:(QKGeofenceManagerState)state;
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didFailWithError:(NSError *)error;
+
+@end
+```
+QKGeofenceManager calls `geofenceManager:isInsideGeofence:` when the user enters or is currently inside the geofence. `geofenceManager:didChangeState:` is called when the manager changes from one of three states: `QKGeofenceManagerStateIdle`, `QKGeofenceManagerStateProcessing` and `QKGeofenceManagerStateFailed`.
