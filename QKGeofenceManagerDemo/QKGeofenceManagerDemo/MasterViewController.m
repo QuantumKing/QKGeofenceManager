@@ -59,15 +59,6 @@
     geofenceManager.delegate = self;
     geofenceManager.dataSource = self;
     [geofenceManager reloadGeofences];
-    
-    UIActivityIndicatorView *activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
-    [activityView startAnimating];
-    UIBarButtonItem *spinnerItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
-    
-    [self.rightBarButtonItems removeObjectAtIndex:0];
-    [self.rightBarButtonItems insertObject:spinnerItem atIndex:0];
-    
-    self.navigationItem.rightBarButtonItems = self.rightBarButtonItems;
 }
 
 - (void)insertNewObject:(id)sender
@@ -128,18 +119,30 @@
 
 - (void)geofenceManager:(QKGeofenceManager *)geofenceManager didChangeState:(QKGeofenceManagerState)state
 {
-    if (state == QKGeofenceManagerStateIdle) {
+    if (state == QKGeofenceManagerStateProcessing) {
+        UIActivityIndicatorView *activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+        [activityView startAnimating];
+        UIBarButtonItem *spinnerItem = [[UIBarButtonItem alloc] initWithCustomView:activityView];
+        [self.rightBarButtonItems removeObjectAtIndex:0];
+        [self.rightBarButtonItems insertObject:spinnerItem atIndex:0];
+        self.navigationItem.rightBarButtonItems = self.rightBarButtonItems;
+    }
+    else {
         [self.tableView reloadData];
-        
         UIBarButtonItem *refreshButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(reloadGeofences)];
-
         [self.rightBarButtonItems removeObjectAtIndex:0];
         [self.rightBarButtonItems insertObject:refreshButton atIndex:0];
-        
         self.navigationItem.rightBarButtonItems = self.rightBarButtonItems;
     }
 }
 
+- (void)geofenceManager:(QKGeofenceManager *)geofenceManager didFailWithError:(NSError *)error
+{
+    NSString *msg = [error localizedDescription];
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Error" message:msg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [alertView show];
+
+}
 #pragma mark - Location Manager
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
