@@ -71,7 +71,7 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     return self;
 }
 
-- (void)_setState:(QKGeofenceManagerState)state
+- (void)_QK_setState:(QKGeofenceManagerState)state
 {
     if (state != _state) {
         _state = state;
@@ -99,7 +99,7 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     NSArray *allGeofences = [self.dataSource geofencesForGeofenceManager:self];
     
     if ([allGeofences count] > 0) {
-        [self _setState:QKGeofenceManagerStateProcessing];
+        [self _QK_setState:QKGeofenceManagerStateProcessing];
         
         // Timer to get a lock on the GPS location
         NSTimeInterval timeToLock = 9.9 - MaxTimeToProcessGeofences;
@@ -113,7 +113,7 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
         [self.locationManager startMonitoringSignificantLocationChanges];
     }
     else {
-        [self _setState:QKGeofenceManagerStateIdle];
+        [self _QK_setState:QKGeofenceManagerStateIdle];
     }
 }
 
@@ -227,7 +227,7 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     [defaults setObject:[self.insideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
     [defaults synchronize];
     
-    [self _setState:QKGeofenceManagerStateFailed];
+    [self _QK_setState:QKGeofenceManagerStateFailed];
     
     if ([self.delegate respondsToSelector:@selector(geofenceManager:didFailWithError:)]) {
         if ([error isKindOfClass:[NSError class]]) {
@@ -251,7 +251,7 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
     [defaults setObject:[self.insideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
     [defaults synchronize];
     
-    [self _setState:QKGeofenceManagerStateIdle];
+    [self _QK_setState:QKGeofenceManagerStateIdle];
 }
 
 #pragma mark - CLLocationManagerDelegate methods
