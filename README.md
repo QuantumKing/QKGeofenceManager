@@ -54,4 +54,4 @@ The demo provided allows a user to add geofences and display them in a table vie
 
 ##Installation via Cocoapods
 
-Add pod `QKGeofenceManager`, `~> 1.0` to your `Podfile` and run `pod` to install.
+Add `pod 'QKGeofenceManager', '~> 1.0'` to your `Podfile` and run `pod` to install.
