@@ -29,9 +29,13 @@
     [self.view addGestureRecognizer:recog];
     
     self.identifierTextField.text = [self.geofence valueForKey:@"identifier"];
+    self.identifierTextField.delegate = self;
+    [self.identifierTextField addTarget:self.view action:@selector(endEditing:) forControlEvents:UIControlEventEditingDidEndOnExit];
+
     self.radiusTextField.text = [[self.geofence valueForKey:@"radius"] stringValue];
     self.radiusTextField.delegate = self;
-    
+    [self.radiusTextField addTarget:self.view action:@selector(endEditing:) forControlEvents:UIControlEventEditingDidEndOnExit];
+
     CLLocationDegrees lat = [[self.geofence valueForKey:@"lat"] doubleValue];
     CLLocationDegrees lon = [[self.geofence valueForKey:@"lon"] doubleValue];
     CLLocationDistance radius = [[self.geofence valueForKey:@"radius"] doubleValue];
@@ -82,11 +86,6 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
-- (void)dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - MKMapViewDelegate
