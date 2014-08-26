@@ -67,6 +67,10 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         self.locationManager = [[CLLocationManager alloc] init];
         self.locationManager.delegate = self;
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
+        
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSArray *previouslyInsideRegionIds = [defaults arrayForKey:QKInsideRegionsDefaultsKey];
+        self.previouslyInsideRegionIds = [NSMutableSet setWithArray:previouslyInsideRegionIds];
     }
     return self;
 }
@@ -120,9 +124,6 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
 - (void)_transition_reloadGeofences
 {
     _QK_isTransitioning = YES;
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSArray *previouslyInsideRegionIds = [defaults arrayForKey:QKInsideRegionsDefaultsKey];
-    self.previouslyInsideRegionIds = [NSMutableSet setWithArray:previouslyInsideRegionIds];
     [self _QK_reloadGeofences];
 }
 
@@ -223,10 +224,11 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     self.regionsNeedingProcessing = nil;
     self.regionsBeingProcessed = nil;
     
+    self.previouslyInsideRegionIds = self.insideRegionIds;
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:[self.insideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
+    [defaults setObject:[self.previouslyInsideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
     [defaults synchronize];
-    
+
     [self _QK_setState:QKGeofenceManagerStateFailed];
     
     if ([self.delegate respondsToSelector:@selector(geofenceManager:didFailWithError:)]) {
@@ -247,8 +249,9 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     self.regionsNeedingProcessing = nil;
     self.regionsBeingProcessed = nil;
     
+    self.previouslyInsideRegionIds = self.insideRegionIds;
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:[self.insideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
+    [defaults setObject:[self.previouslyInsideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
     [defaults synchronize];
     
     [self _QK_setState:QKGeofenceManagerStateIdle];
@@ -290,8 +293,15 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     if ([region.identifier isEqualToString:CurrentRegionName] && self.state != QKGeofenceManagerStateProcessing) { // We exited the current region, so we need to refresh.
         [self _transition_reloadGeofences];
     }
-    else if ([self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) { // Exited a geofence.
-        [self.delegate geofenceManager:self didExitGeofence:region];
+    else {
+        [self.previouslyInsideRegionIds removeObject:region.identifier];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:[self.previouslyInsideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
+        [defaults synchronize];
+        
+        if ([self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) { // Exited a geofence.
+            [self.delegate geofenceManager:self didExitGeofence:region];
+        }
     }
 }
 
