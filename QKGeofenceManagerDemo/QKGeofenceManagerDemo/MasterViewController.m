@@ -43,6 +43,8 @@
     self.locationManager = [[CLLocationManager alloc] init];
     self.locationManager.delegate = self;
     [self.locationManager startUpdatingLocation];
+    
+    [self reloadGeofences];
 }
 
 - (void)didReceiveMemoryWarning

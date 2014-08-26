@@ -35,7 +35,7 @@
     BOOL _QK_isTransitioning;
 }
 
-@synthesize state = _state;
+@synthesize state = _QK_state;
 
 // iOS gives you 10 seconds in total to process enter/exit events, I use up to 5 seconds to process the geofences
 // and the rest to get a lock on the GPS.
@@ -49,7 +49,7 @@ static const CLLocationDistance CurrentRegionMaxRadius = 1000;
 static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
 // NSUserDefaults key for storing insideRegionIds.
-static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
+static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
 
 + (instancetype)sharedGeofenceManager
 {
@@ -73,10 +73,10 @@ static NSString *QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults_key";
 
 - (void)_QK_setState:(QKGeofenceManagerState)state
 {
-    if (state != _state) {
-        _state = state;
+    if (state != _QK_state) {
+        _QK_state = state;
         if ([self.delegate respondsToSelector:@selector(geofenceManager:didChangeState:)]) {
-            [self.delegate geofenceManager:self didChangeState:_state];
+            [self.delegate geofenceManager:self didChangeState:_QK_state];
         }
     }
 }
