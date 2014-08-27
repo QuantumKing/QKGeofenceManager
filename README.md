@@ -50,6 +50,8 @@ The demo provided allows a user to add geofences and display them in a table vie
 
 ![](https://raw.githubusercontent.com/QuantumKing/QKGeofenceManager/master/QKGeofenceManagerDemo/screenshots/IMG_0058.PNG)
 
+It is also possible to edit a geofence (which is by default at the current location) by selecting it in the table view and then dragging the marker around on the map.
+
 ![](https://raw.githubusercontent.com/QuantumKing/QKGeofenceManager/master/QKGeofenceManagerDemo/screenshots/IMG_0059.PNG)
 
 ##Installation via Cocoapods
