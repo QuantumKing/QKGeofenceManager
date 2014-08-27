@@ -56,4 +56,4 @@ It is also possible to edit a geofence (which is by default at the current locat
 
 ##Installation via Cocoapods
 
-Add `pod 'QKGeofenceManager', '~> 1.0'` to your `Podfile` and run `pod` to install.
+Add `pod 'QKGeofenceManager', '~> 1.1'` to your `Podfile` and run `pod` to install.
