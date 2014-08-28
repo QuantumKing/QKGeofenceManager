@@ -173,7 +173,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             if (rounded <= 0) {
                 [self.insideRegions addObject:fence];
             }
-            else { // Group by distances within 10m of eachother.
+            else if (rounded <= 200) { // Group by distances within 10m of eachother, but no more than 200m away from user.
                 NSNumber *key = @(rounded);
                 NSArray *val = self.regionsGroupedByDistance[key];
                 val = val ? [val arrayByAddingObject:fence] : @[fence];
@@ -224,7 +224,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             [self.regionsBeingProcessed addObject:[NSNull null]];
         }
     }
-    
+
     for (id fence in self.regionsBeingProcessed) {
         if ([fence isKindOfClass:[CLRegion class]]) {
             [self.locationManager startMonitoringForRegion:fence];
