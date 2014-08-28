@@ -29,7 +29,7 @@
 @property (nonatomic) NSMutableSet *insideRegions;
 
 // Regions which user was previously inside
-@property (nonatomic) NSMutableSet *previouslyInsideRegionIds;
+@property (nonatomic) NSMutableArray *previouslyInsideRegionIds;
 
 // Processing happens while processingTimer is valid.
 @property (nonatomic) NSTimer *processingTimer;
@@ -75,7 +75,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSArray *previouslyInsideRegionIds = [defaults arrayForKey:QKInsideRegionsDefaultsKey];
-        self.previouslyInsideRegionIds = [NSMutableSet setWithArray:previouslyInsideRegionIds];
+        self.previouslyInsideRegionIds = [previouslyInsideRegionIds mutableCopy];
     }
     return self;
 }
@@ -280,10 +280,6 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         }
     }
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:insideRegionIds forKey:QKInsideRegionsDefaultsKey];
-    [defaults synchronize];
-    
     if (_QK_isTransitioning && [self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) {
         for (CLRegion *region in self.allGeofences) {
             if ([self.insideRegions containsObject:region]) {
@@ -295,6 +291,11 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             }
         }
     }
+    
+    self.previouslyInsideRegionIds = insideRegionIds;
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:insideRegionIds forKey:QKInsideRegionsDefaultsKey];
+    [defaults synchronize];
 }
 
 #pragma mark - CLLocationManagerDelegate methods
@@ -339,7 +340,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     else {
         [self.previouslyInsideRegionIds removeObject:region.identifier];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:[self.previouslyInsideRegionIds allObjects] forKey:QKInsideRegionsDefaultsKey];
+        [defaults setObject:self.previouslyInsideRegionIds forKey:QKInsideRegionsDefaultsKey];
         [defaults synchronize];
         
         if ([self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) { // Exited a geofence.
