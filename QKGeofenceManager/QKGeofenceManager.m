@@ -150,15 +150,16 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     if (self.state != QKGeofenceManagerStateProcessing) {
         return;
     }
-
-    self.boundaryIndicesBeingProcessed = [NSMutableIndexSet indexSet];    
+    
+    self.boundaryIndicesBeingProcessed = [NSMutableIndexSet indexSet];
     self.regionsGroupedByDistance = [NSMutableDictionary dictionary];
     self.regionsBeingProcessed = [NSMutableArray array];
     self.nearestRegions = [NSMutableSet set];
     self.insideRegions = [NSMutableSet set];
-
+    
     NSMutableArray *fencesWithDistanceToBoundary = [NSMutableArray array];
-
+    NSMutableDictionary *minBoundaryDistancesByIndex = [NSMutableDictionary dictionary];
+    
     for (CLCircularRegion *fence in self.allGeofences) {
         if (fence.radius < self.locationManager.maximumRegionMonitoringDistance) {
             CLLocation *fenceCenter = [[CLLocation alloc] initWithLatitude:fence.center.latitude longitude:fence.center.longitude];
@@ -166,21 +167,40 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             //CLLocationAccuracy accuracy = location.horizontalAccuracy;
             CLLocationDistance d_r = [location distanceFromLocation:fenceCenter] - fence.radius;
             [fencesWithDistanceToBoundary addObject:@[fence, @(fabs(d_r))]];
-
-            int rounded = (int)d_r;
-            rounded -= rounded % 10;
             
-            if (rounded <= 0) {
+            if (d_r < 0) {
                 [self.insideRegions addObject:fence];
             }
-            else if (rounded <= 200) { // Group by distances within 10m of eachother, but no more than 200m away from user.
-                NSNumber *key = @(rounded);
-                NSArray *val = self.regionsGroupedByDistance[key];
-                val = val ? [val arrayByAddingObject:fence] : @[fence];
-                self.regionsGroupedByDistance[key] = val;
+            else {
+                int rounded = (int)d_r;
+                rounded -= rounded % 10;
+                
+                if (rounded <= 0) {
+                    [self.insideRegions addObject:fence];
+                }
+                else if (rounded <= 200) { // Group by distances within 10m of eachother, but no more than 200m away from user.
+                    NSNumber *key = @(rounded);
+                    NSArray *val = self.regionsGroupedByDistance[key];
+                    if (val) {
+                        if ([minBoundaryDistancesByIndex[key] compare:@(d_r)] == NSOrderedDescending) {
+                            val = [@[fence] arrayByAddingObjectsFromArray:val];
+                            minBoundaryDistancesByIndex[key] = @(d_r);
+                        }
+                        else {
+                            val = [val arrayByAddingObject:fence];
+                        }
+                    }
+                    else {
+                        val = @[fence];
+                        minBoundaryDistancesByIndex[key] = @(d_r);
+                    }
+                    self.regionsGroupedByDistance[key] = val;
+                }
             }
         }
     }
+    
+    NSLog(@"%@", self.regionsGroupedByDistance);
     
     [fencesWithDistanceToBoundary sortUsingComparator:^NSComparisonResult(NSArray *tuple1, NSArray *tuple2){
         return [[tuple1 lastObject] compare:[tuple2 lastObject]];
@@ -195,7 +215,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             *stop = YES;
         }
     }];
-        
+    
     CLLocationDistance radius;
     if ([self.nearestRegions count] < GeofenceMonitoringLimit) {
         radius = CurrentRegionMaxRadius;
@@ -211,7 +231,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
     [self.regionsBeingProcessed addObject:currentRegion];
     [self.boundaryIndicesBeingProcessed addIndex:0];
-
+    
     for (int i = 1; i <= 20; i++) {
         NSNumber *key = @(10 * i);
         NSArray *val = self.regionsGroupedByDistance[key];
@@ -224,7 +244,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             [self.regionsBeingProcessed addObject:[NSNull null]];
         }
     }
-
+    
     for (id fence in self.regionsBeingProcessed) {
         if ([fence isKindOfClass:[CLRegion class]]) {
             [self.locationManager startMonitoringForRegion:fence];
@@ -391,7 +411,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     
     self.regionsBeingProcessed[idx] = [NSNull null];
     [self.boundaryIndicesBeingProcessed removeIndex:idx];
-
+    
     if ([self.boundaryIndicesBeingProcessed count] == 0) {
         for (CLRegion *fence in self.nearestRegions) {
             [manager performSelectorInBackground:@selector(startMonitoringForRegion:) withObject:fence];
