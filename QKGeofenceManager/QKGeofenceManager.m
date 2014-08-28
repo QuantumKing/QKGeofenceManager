@@ -238,9 +238,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     [self.locationManager stopUpdatingLocation];
     self.regionsGroupedByDistance = nil;
     self.regionsBeingProcessed = nil;
-    
     [self handleGeofenceEvents];
-
     [self _QK_setState:QKGeofenceManagerStateFailed];
     
     if ([self.delegate respondsToSelector:@selector(geofenceManager:didFailWithError:)]) {
@@ -260,9 +258,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     [self.locationManager stopUpdatingLocation];
     self.regionsGroupedByDistance = nil;
     self.regionsBeingProcessed = nil;
-    
     [self handleGeofenceEvents];
-    
     [self _QK_setState:QKGeofenceManagerStateIdle];
 }
 
@@ -288,14 +284,14 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     [defaults setObject:insideRegionIds forKey:QKInsideRegionsDefaultsKey];
     [defaults synchronize];
     
-    if (_QK_isTransitioning) {
+    if (_QK_isTransitioning && [self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) {
         for (CLRegion *region in self.allGeofences) {
-            if (![self.insideRegions containsObject:region]) {
-                if ([self.delegate respondsToSelector:@selector(geofenceManager:didExitGeofence:)]) {
-                    if ([self.previouslyInsideRegionIds containsObject:region.identifier]) {
-                        [self.delegate geofenceManager:self didExitGeofence:region];
-                    }
-                }
+            if ([self.insideRegions containsObject:region]) {
+                continue;
+            }
+            
+            if ([self.previouslyInsideRegionIds containsObject:region.identifier]) {
+                [self.delegate geofenceManager:self didExitGeofence:region];
             }
         }
     }
@@ -369,7 +365,6 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             NSLog(@"found current region %@", region);
         }
         else {
-            NSLog(@"uhh");
             CLLocationDistance radius = [(CLCircularRegion *)region radius];
             CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:manager.location.coordinate radius:radius identifier:CurrentRegionName];
             self.regionsBeingProcessed[idx] = currentRegion;
