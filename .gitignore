@@ -6,6 +6,9 @@
 #
 # Pods/
 
+*/.DS_Store
 build
 QKGeofenceManager.podspec
+*/QKGeofenceManagerDemo.xcodeproj/xcuserdata
+*/QKGeofenceManagerDemo.xcodeproj/project.xcworkspace
 
