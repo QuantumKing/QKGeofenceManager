@@ -44,13 +44,12 @@
 
 // iOS gives you 10 seconds in total to process enter/exit events, I use up to 5 seconds to process the geofences
 // and the rest to get a lock on the GPS.
-static const NSTimeInterval MaxTimeToProcessGeofences = 5.0;
+static const NSTimeInterval MaxTimeToProcessGeofences = 6.0;
 
 // iOS gives you a maximum of 20 regions to monitor. I use one for the current region.
 static const NSUInteger GeofenceMonitoringLimit = 20 - 1;
 
 static NSString *const CurrentRegionName = @"qk_currentRegion";
-static const CLLocationDistance CurrentRegionMaxRadius = 1000;
 static const CGFloat CurrentRegionPaddingRatio = 0.5;
 
 // NSUserDefaults key for storing insideRegionIds.
@@ -111,7 +110,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         [self _QK_setState:QKGeofenceManagerStateProcessing];
         
         // Timer to get a lock on the GPS location
-        NSTimeInterval timeToLock = 9.9 - MaxTimeToProcessGeofences;
+        NSTimeInterval timeToLock = 10 - MaxTimeToProcessGeofences;
         self.processingTimer = [NSTimer scheduledTimerWithTimeInterval:timeToLock target:self selector:@selector(startProcessingGeofences) userInfo:nil repeats:NO];
         
         // Turn on location updates for accuracy and so processing can happen in the background.
@@ -216,21 +215,17 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         }
     }];
     
-    CLLocationDistance radius;
-    if ([self.nearestRegions count] < GeofenceMonitoringLimit) {
-        radius = CurrentRegionMaxRadius;
-    }
-    else {
-        NSUInteger idx = [self.nearestRegions count] - 1;
+    if ([self.nearestRegions count] == GeofenceMonitoringLimit) {
+    // We need a region around the user to refresh geofences.
+        NSUInteger idx = GeofenceMonitoringLimit - 1;
         NSArray *tuple = [fencesWithDistanceToBoundary objectAtIndex:idx];
-        radius = MIN(CurrentRegionMaxRadius, [[tuple lastObject] doubleValue]);
-        radius = MAX(radius, 2.0);
+        CLLocationDistance radius = MIN(self.locationManager.maximumRegionMonitoringDistance, [[tuple lastObject] doubleValue]);
+        radius = MAX(radius, 2.0) * CurrentRegionPaddingRatio;
+        
+        CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
+        [self.regionsBeingProcessed addObject:currentRegion];
+        [self.boundaryIndicesBeingProcessed addIndex:0];
     }
-    radius *= CurrentRegionPaddingRatio;
-    
-    CLCircularRegion *currentRegion = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:radius identifier:CurrentRegionName];
-    [self.regionsBeingProcessed addObject:currentRegion];
-    [self.boundaryIndicesBeingProcessed addIndex:0];
     
     for (int i = 1; i <= 20; i++) {
         NSNumber *key = @(10 * i);
@@ -449,6 +444,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     if (self.state != QKGeofenceManagerStateProcessing) { // This is coming from significant location changes, since we are not processing anymore.
         [self _transition_reloadGeofences];
     }
+    NSLog(@"%@", [locations lastObject]);
 }
 
 @end
