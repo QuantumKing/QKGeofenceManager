@@ -199,8 +199,6 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         }
     }
     
-    NSLog(@"%@", self.regionsGroupedByDistance);
-    
     [fencesWithDistanceToBoundary sortUsingComparator:^NSComparisonResult(NSArray *tuple1, NSArray *tuple2){
         return [[tuple1 lastObject] compare:[tuple2 lastObject]];
     }];
@@ -240,9 +238,16 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         }
     }
     
-    for (id fence in self.regionsBeingProcessed) {
-        if ([fence isKindOfClass:[CLRegion class]]) {
+    if ([self.boundaryIndicesBeingProcessed count] == 0) {
+        for (CLRegion *fence in self.nearestRegions) {
             [self.locationManager startMonitoringForRegion:fence];
+        }
+    }
+    else {
+        for (id fence in self.regionsBeingProcessed) {
+            if ([fence isKindOfClass:[CLRegion class]]) {
+                [self.locationManager startMonitoringForRegion:fence];
+            }
         }
     }
 }
@@ -444,7 +449,6 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     if (self.state != QKGeofenceManagerStateProcessing) { // This is coming from significant location changes, since we are not processing anymore.
         [self _transition_reloadGeofences];
     }
-    NSLog(@"%@", [locations lastObject]);
 }
 
 @end
