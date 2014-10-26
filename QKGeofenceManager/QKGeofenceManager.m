@@ -97,6 +97,11 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     [self.locationManager stopUpdatingLocation];
     [self.locationManager stopMonitoringSignificantLocationChanges];
     
+    if ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusAuthorizedAlways) {
+        [self.locationManager requestAlwaysAuthorization];
+        return;
+    }
+    
     self.regionsGroupedByDistance = nil;
     self.regionsBeingProcessed = nil;
     
@@ -237,7 +242,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             [self.regionsBeingProcessed addObject:[NSNull null]];
         }
     }
-    
+        
     if ([self.boundaryIndicesBeingProcessed count] == 0) {
         for (CLRegion *fence in self.nearestRegions) {
             [self.locationManager startMonitoringForRegion:fence];
@@ -328,7 +333,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     else if (![self.regionsBeingProcessed containsObject:region] && ![self.nearestRegions containsObject:region]) {
         return;
     }
-    
+
     if ([CLLocationManager respondsToSelector:@selector(isMonitoringAvailableForClass:)]) {
         if (![CLLocationManager isMonitoringAvailableForClass:[CLCircularRegion class]]) { // Old iOS
             [self failedProcessingGeofencesWithError:error];
@@ -394,7 +399,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         }
     }
     else {
-        NSNumber *key = @(10 * idx);
+        NSNumber *key = @(10 * idx + 10);
         if (state == CLRegionStateInside) {
             NSArray *fences = self.regionsGroupedByDistance[key];
             [self.insideRegions addObjectsFromArray:fences];
@@ -410,7 +415,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     }
     
     self.regionsBeingProcessed[idx] = [NSNull null];
-    [self.boundaryIndicesBeingProcessed removeIndex:idx];
+    [self.boundaryIndicesBeingProcessed removeIndex:(idx+1)];
     
     if ([self.boundaryIndicesBeingProcessed count] == 0) {
         for (CLRegion *fence in self.nearestRegions) {
@@ -448,6 +453,14 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
 {
     if (self.state != QKGeofenceManagerStateProcessing) { // This is coming from significant location changes, since we are not processing anymore.
         [self _transition_reloadGeofences];
+    }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+{
+    if (status == kCLAuthorizationStatusAuthorizedAlways) {
+        // begin
+        [self _QK_reloadGeofences];
     }
 }
 

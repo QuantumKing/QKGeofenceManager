@@ -76,7 +76,7 @@
     [newManagedObject setValue:@20 forKey:@"radius"];
     
     NSInteger n = [self tableView:self.tableView numberOfRowsInSection:0];
-    NSString *identifier = [NSString stringWithFormat:@"Geofence-%i", n+1];
+    NSString *identifier = [NSString stringWithFormat:@"Geofence-%li", n+1];
     [newManagedObject setValue:identifier forKey:@"identifier"];
     
     // Save the context.
@@ -262,6 +262,9 @@
             
         case NSFetchedResultsChangeDelete:
             [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
+            break;
+            
+        default:
             break;
     }
 }
