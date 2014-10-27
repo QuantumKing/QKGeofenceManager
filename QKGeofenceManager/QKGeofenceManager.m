@@ -46,8 +46,8 @@
 // and the rest to get a lock on the GPS.
 static const NSTimeInterval MaxTimeToProcessGeofences = 6.0;
 
-// iOS gives you a maximum of 20 regions to monitor. I use one for the current region.
-static const NSUInteger GeofenceMonitoringLimit = 20 - 1;
+// iOS gives you a maximum of 20 regions to monitor.
+static const NSUInteger GeofenceMonitoringLimit = 20;
 
 static NSString *const CurrentRegionName = @"qk_currentRegion";
 static const CGFloat CurrentRegionPaddingRatio = 0.5;
@@ -97,10 +97,14 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     [self.locationManager stopUpdatingLocation];
     [self.locationManager stopMonitoringSignificantLocationChanges];
     
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+
     if ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusAuthorizedAlways) {
         [self.locationManager requestAlwaysAuthorization];
         return;
     }
+    
+#endif
     
     self.regionsGroupedByDistance = nil;
     self.regionsBeingProcessed = nil;
@@ -210,7 +214,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     
     [fencesWithDistanceToBoundary enumerateObjectsUsingBlock:^(NSArray *tuple, NSUInteger idx, BOOL *stop){
         CLRegion *fence = [tuple firstObject];
-        if (idx < GeofenceMonitoringLimit) {
+        if (idx < GeofenceMonitoringLimit - 1) {
             [self.nearestRegions addObject:fence];
         }
         else {
@@ -218,10 +222,9 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         }
     }];
     
-    if ([self.nearestRegions count] == GeofenceMonitoringLimit) {
+    if ([self.nearestRegions count] == GeofenceMonitoringLimit - 1) {
     // We need a region around the user to refresh geofences.
-        NSUInteger idx = GeofenceMonitoringLimit - 1;
-        NSArray *tuple = [fencesWithDistanceToBoundary objectAtIndex:idx];
+        NSArray *tuple = [fencesWithDistanceToBoundary lastObject];
         CLLocationDistance radius = MIN(self.locationManager.maximumRegionMonitoringDistance, [[tuple lastObject] doubleValue]);
         radius = MAX(radius, 2.0) * CurrentRegionPaddingRatio;
         
@@ -458,10 +461,14 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
 
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
 {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+
     if (status == kCLAuthorizationStatusAuthorizedAlways) {
         // begin
         [self _QK_reloadGeofences];
     }
+    
+#endif
 }
 
 @end
