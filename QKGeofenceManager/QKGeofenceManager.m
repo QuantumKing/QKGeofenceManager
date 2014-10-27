@@ -97,14 +97,12 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     [self.locationManager stopUpdatingLocation];
     [self.locationManager stopMonitoringSignificantLocationChanges];
     
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
-
     if ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusAuthorizedAlways) {
-        [self.locationManager requestAlwaysAuthorization];
-        return;
+        if ([self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)]) {
+            [self.locationManager requestAlwaysAuthorization];
+            return;
+        }
     }
-    
-#endif
     
     self.regionsGroupedByDistance = nil;
     self.regionsBeingProcessed = nil;
@@ -461,14 +459,10 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
 
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
 {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
-
     if (status == kCLAuthorizationStatusAuthorizedAlways) {
         // begin
         [self _QK_reloadGeofences];
     }
-    
-#endif
 }
 
 @end
