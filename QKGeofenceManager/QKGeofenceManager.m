@@ -230,6 +230,9 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         [self.regionsBeingProcessed addObject:currentRegion];
         [self.boundaryIndicesBeingProcessed addIndex:0];
     }
+    else {
+        [self.regionsBeingProcessed addObject:[NSNull null]];
+    }
     
     for (int i = 1; i <= 20; i++) {
         NSNumber *key = @(10 * i);
@@ -243,7 +246,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
             [self.regionsBeingProcessed addObject:[NSNull null]];
         }
     }
-        
+    
     if ([self.boundaryIndicesBeingProcessed count] == 0) {
         for (CLRegion *fence in self.nearestRegions) {
             [self.locationManager startMonitoringForRegion:fence];
@@ -400,7 +403,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
         }
     }
     else {
-        NSNumber *key = @(10 * idx + 10);
+        NSNumber *key = @(10 * idx);
         if (state == CLRegionStateInside) {
             NSArray *fences = self.regionsGroupedByDistance[key];
             [self.insideRegions addObjectsFromArray:fences];
@@ -416,7 +419,7 @@ static NSString *const QKInsideRegionsDefaultsKey = @"qk_inside_regions_defaults
     }
     
     self.regionsBeingProcessed[idx] = [NSNull null];
-    [self.boundaryIndicesBeingProcessed removeIndex:(idx+1)];
+    [self.boundaryIndicesBeingProcessed removeIndex:idx];
     
     if ([self.boundaryIndicesBeingProcessed count] == 0) {
         for (CLRegion *fence in self.nearestRegions) {
